@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dinhhuan.note.mapper.UmsInvitationMapper">
+  <resultMap id="BaseResultMap" type="com.dinhhuan.note.model.UmsInvitation">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="inviter_id" jdbcType="BIGINT" property="inviterId" />
+    <result column="invitee_email" jdbcType="VARCHAR" property="inviteeEmail" />
+    <result column="object_type" jdbcType="VARCHAR" property="objectType" />
+    <result column="object_id" jdbcType="INTEGER" property="objectId" />
+    <result column="role" jdbcType="VARCHAR" property="role" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, inviter_id, invitee_email, object_type, object_id, role, status, created_at, 
+    updated_at
+  </sql>
+  <select id="selectByExample" parameterType="com.dinhhuan.note.model.UmsInvitationExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from ums_invitation
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from ums_invitation
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from ums_invitation
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.dinhhuan.note.model.UmsInvitationExample">
+    delete from ums_invitation
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.dinhhuan.note.model.UmsInvitation">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into ums_invitation (inviter_id, invitee_email, object_type, 
+      object_id, role, status, 
+      created_at, updated_at)
+    values (#{inviterId,jdbcType=BIGINT}, #{inviteeEmail,jdbcType=VARCHAR}, #{objectType,jdbcType=VARCHAR}, 
+      #{objectId,jdbcType=INTEGER}, #{role,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, 
+      #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.dinhhuan.note.model.UmsInvitation">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into ums_invitation
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="inviterId != null">
+        inviter_id,
+      </if>
+      <if test="inviteeEmail != null">
+        invitee_email,
+      </if>
+      <if test="objectType != null">
+        object_type,
+      </if>
+      <if test="objectId != null">
+        object_id,
+      </if>
+      <if test="role != null">
+        role,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="createdAt != null">
+        created_at,
+      </if>
+      <if test="updatedAt != null">
+        updated_at,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="inviterId != null">
+        #{inviterId,jdbcType=BIGINT},
+      </if>
+      <if test="inviteeEmail != null">
+        #{inviteeEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="objectType != null">
+        #{objectType,jdbcType=VARCHAR},
+      </if>
+      <if test="objectId != null">
+        #{objectId,jdbcType=INTEGER},
+      </if>
+      <if test="role != null">
+        #{role,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createdAt != null">
+        #{createdAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedAt != null">
+        #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.dinhhuan.note.model.UmsInvitationExample" resultType="java.lang.Long">
+    select count(*) from ums_invitation
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update ums_invitation
+    <set>
+      <if test="row.id != null">
+        id = #{row.id,jdbcType=BIGINT},
+      </if>
+      <if test="row.inviterId != null">
+        inviter_id = #{row.inviterId,jdbcType=BIGINT},
+      </if>
+      <if test="row.inviteeEmail != null">
+        invitee_email = #{row.inviteeEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="row.objectType != null">
+        object_type = #{row.objectType,jdbcType=VARCHAR},
+      </if>
+      <if test="row.objectId != null">
+        object_id = #{row.objectId,jdbcType=INTEGER},
+      </if>
+      <if test="row.role != null">
+        role = #{row.role,jdbcType=VARCHAR},
+      </if>
+      <if test="row.status != null">
+        status = #{row.status,jdbcType=VARCHAR},
+      </if>
+      <if test="row.createdAt != null">
+        created_at = #{row.createdAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="row.updatedAt != null">
+        updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update ums_invitation
+    set id = #{row.id,jdbcType=BIGINT},
+      inviter_id = #{row.inviterId,jdbcType=BIGINT},
+      invitee_email = #{row.inviteeEmail,jdbcType=VARCHAR},
+      object_type = #{row.objectType,jdbcType=VARCHAR},
+      object_id = #{row.objectId,jdbcType=INTEGER},
+      role = #{row.role,jdbcType=VARCHAR},
+      status = #{row.status,jdbcType=VARCHAR},
+      created_at = #{row.createdAt,jdbcType=TIMESTAMP},
+      updated_at = #{row.updatedAt,jdbcType=TIMESTAMP}
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dinhhuan.note.model.UmsInvitation">
+    update ums_invitation
+    <set>
+      <if test="inviterId != null">
+        inviter_id = #{inviterId,jdbcType=BIGINT},
+      </if>
+      <if test="inviteeEmail != null">
+        invitee_email = #{inviteeEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="objectType != null">
+        object_type = #{objectType,jdbcType=VARCHAR},
+      </if>
+      <if test="objectId != null">
+        object_id = #{objectId,jdbcType=INTEGER},
+      </if>
+      <if test="role != null">
+        role = #{role,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createdAt != null">
+        created_at = #{createdAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedAt != null">
+        updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dinhhuan.note.model.UmsInvitation">
+    update ums_invitation
+    set inviter_id = #{inviterId,jdbcType=BIGINT},
+      invitee_email = #{inviteeEmail,jdbcType=VARCHAR},
+      object_type = #{objectType,jdbcType=VARCHAR},
+      object_id = #{objectId,jdbcType=INTEGER},
+      role = #{role,jdbcType=VARCHAR},
+      status = #{status,jdbcType=VARCHAR},
+      created_at = #{createdAt,jdbcType=TIMESTAMP},
+      updated_at = #{updatedAt,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

@@ -1,0 +1,45 @@
+package com.dinhhuan.note.controller;
+
+import com.dinhhuan.note.common.api.CommonResult;
+import com.dinhhuan.note.dto.WorkspaceParam;
+import com.dinhhuan.note.model.NmsWorkspace;
+import com.dinhhuan.note.service.NmsWorkspaceService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/workspace")
+public class NmsWorkspaceController {
+    @Autowired
+    private NmsWorkspaceService nmsWorkspaceService;
+
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> create(@RequestBody WorkspaceParam param) {
+        int count = nmsWorkspaceService.createWorkspace(param);
+        if(count > 0 ){
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/info/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<NmsWorkspace> getInfo(@PathVariable Long id){
+        NmsWorkspace workspace = nmsWorkspaceService.getWorkspaceInfo(id);
+        if(workspace != null){
+            return CommonResult.success(workspace);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value="/list")
+    @ResponseBody
+    public CommonResult<List<NmsWorkspace>> list(){
+        List<NmsWorkspace> list = nmsWorkspaceService.listWorkspaces();
+        if(list != null && !list.isEmpty()) {
+            return CommonResult.success(list);
+        }
+        return CommonResult.failed();
+    }
+}

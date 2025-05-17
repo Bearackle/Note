@@ -1,0 +1,48 @@
+server:
+  port: 8080
+jwt:
+  tokenHeader: Authorization
+  secret: WvqWxVY0NuX469fNVMVT3YsJmLevE6Vk4TOwfwqhVOaiGYLE8jTtmmclg7Zm/LOAbRJKPq5SAzlWh0NI7Y01urMPvreS13eo89hb7YaDd7k=
+  expiration: 604800
+  tokenHead: 'Bearer '
+spring:
+  application:
+    name: note-backend
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+mybatis:
+  mapper-locations:
+    - classpath:com/dinhhuan/note/mapper/*.xml
+    - classpath:com/dinhhuan/note/dao/*.xml
+secure:
+  ignored:
+    urls:
+      - /swagger-ui/
+      - /swagger-resources/**
+      - /**/v2/api-docs
+      - /**/*.html
+      - /**/*.js
+      - /**/*.css
+      - /**/*.png
+      - /**/*.map
+      - /favicon.ico
+      - /actuator/**
+      - /druid/**
+      - /user/login
+      - /user/register
+      - /user/info
+      - /user/logout
+      - /minio/upload
+redis:
+  database: note
+  key:
+    user: 'ums:user'
+  expire:
+    common: 86400

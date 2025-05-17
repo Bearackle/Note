@@ -1,0 +1,62 @@
+package com.dinhhuan.note.service.impl;
+
+import com.dinhhuan.note.dto.PmsPageParam;
+import com.dinhhuan.note.mapper.PmsPageMapper;
+import com.dinhhuan.note.model.PmsPage;
+import com.dinhhuan.note.model.PmsPageExample;
+import com.dinhhuan.note.model.UmsUser;
+import com.dinhhuan.note.service.PmsPageService;
+import com.dinhhuan.note.service.UmsUserService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class PmsPageServiceImpl implements PmsPageService {
+    @Autowired
+    private PmsPageMapper pmsPageMapper;
+    @Autowired
+    private UmsUserService umsUserService;
+    @Override
+    public int create(PmsPageParam param) {
+        int count = 0;
+        PmsPage pmsPage = new PmsPage();
+        BeanUtils.copyProperties(param, pmsPage);
+        UmsUser user = umsUserService.getCurrentUser();
+        pmsPage.setCreatedBy(user.getId());
+        count += pmsPageMapper.insert(pmsPage);
+        return count;
+    }
+
+    @Override
+    public List<PmsPage> list(Long workspaceId) {
+        PmsPageExample example = new PmsPageExample();
+        PmsPageExample.Criteria criteria = example.createCriteria();
+        criteria.andWorkspaceIdEqualTo(workspaceId);
+        return pmsPageMapper.selectByExample(example);
+    }
+
+    @Override
+    public List<PmsPage> getChildPages (Long pageId) {
+        List<PmsPage> pmsPagesChildren;
+        PmsPageExample example = new PmsPageExample();
+        PmsPageExample.Criteria criteria = example.createCriteria();
+        criteria.andParentPageIdEqualTo(pageId);
+        pmsPagesChildren = pmsPageMapper.selectByExample(example);
+        return pmsPagesChildren;
+    }
+    @Override
+    public int update(Long id, PmsPageParam param) {
+         PmsPage pmsPage = new PmsPage();
+         BeanUtils.copyProperties(param, pmsPage);
+         return pmsPageMapper.updateByPrimaryKeySelective(pmsPage);
+    }
+
+    @Override
+    public int deletePage(Long id) {
+        return pmsPageMapper.deleteByPrimaryKey(id);
+    }
+}
