@@ -1,0 +1,29 @@
+{
+  "name": "test-yjs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@editorjs/editorjs": "^2.30.8",
+    "@editorjs/header": "^2.8.8",
+    "@editorjs/list": "^2.0.6",
+    "@editorjs/paragraph": "^2.11.7",
+    "@vicons/ionicons5": "^0.13.0",
+    "axios": "^1.9.0",
+    "naive-ui": "^2.41.0",
+    "pinia": "^3.0.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "vite": "^6.3.4",
+    "vite-plugin-monaco-editor": "^1.1.0",
+    "vite-plugin-vue-devtools": "^7.7.2"
+  }
+}
