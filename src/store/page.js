@@ -5,39 +5,40 @@ export const usePageStore = defineStore("page", {
     pages: [],
     selectedPage: null,
     currentContent: null,
+    title: 0,
+    selectedTitle: "",
   }),
   actions: {
-    addPage(page) {
-      this.pages.push(page);
+    setPages(pages) {
+      this.pages = pages;
     },
-    setSelectedPage(page) {
-      this.selectedPage = page;
+    setSelectedPage(pageId) {
+      this.selectedPage = pageId;
     },
     createNewPage(workspaceId) {
       const newPage = {
         id: Date.now(), // Temporary ID until backend creates one
-        title: "Untitled",
+        title: "Untitled #" + this.title,
         workspaceId: workspaceId,
         content: {
           time: new Date().getTime(),
-          blocks: [
-            {
-              type: "paragraph",
-              data: {
-                text: "Start writing here...",
-              },
-            },
-          ],
+          blocks: [],
           version: "2.30.0",
         },
       };
-      this.addPage(newPage);
+      this.setPages([...this.pages, newPage]);
       this.setSelectedPage(newPage.id);
       this.currentContent = newPage.content;
       return newPage;
     },
     setCurrentContent(content) {
       this.currentContent = content;
+    },
+    setUndefinedTitle() {
+      this.title += 1;
+    },
+    setSelectedTitle(title) {
+      this.selectedTitle = title;
     },
   },
 });
