@@ -1,5 +1,7 @@
 package com.dinhhuan.note.service.impl;
 
+import com.dinhhuan.note.dao.PmsPageDao;
+import com.dinhhuan.note.dto.PageShareDto;
 import com.dinhhuan.note.dto.PmsPageParam;
 import com.dinhhuan.note.mapper.PmsBlockMapper;
 import com.dinhhuan.note.mapper.PmsPageMapper;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PmsPageServiceImpl implements PmsPageService {
@@ -27,6 +30,8 @@ public class PmsPageServiceImpl implements PmsPageService {
     private UmsUserService umsUserService;
     @Autowired
     private PmsBlockMapper pmsBlockMapper;
+    @Autowired
+    private PmsPageDao pmsPageDao;
     @Override
     public int create(PmsPageParam param) {
         int count = 0;
@@ -71,5 +76,10 @@ public class PmsPageServiceImpl implements PmsPageService {
         criteria.andPageIdEqualTo(id);
         pmsBlockMapper.deleteByExample(example);
         return pmsPageMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public PageShareDto getGeneralInfo(Long pageId) {
+        return pmsPageDao.getPage(pageId);
     }
 }

@@ -2,6 +2,7 @@ package com.dinhhuan.note.controller;
 
 import com.dinhhuan.note.common.api.CommonResult;
 import com.dinhhuan.note.dto.PmsBlockParam;
+import com.dinhhuan.note.dto.SearchBlockObject;
 import com.dinhhuan.note.model.PmsBlock;
 import com.dinhhuan.note.service.PmsBlockService;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,15 @@ public class PmsBlockController {
         int count = pmsBlockService.delete(idBlock);
         if(count > 0){
             return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<SearchBlockObject>> searchBlockContent(@RequestParam("keyword") String keyword){
+        List<SearchBlockObject> objects = pmsBlockService.search(keyword);
+        if(objects != null && !objects.isEmpty()){
+            return CommonResult.success(objects);
         }
         return CommonResult.failed();
     }

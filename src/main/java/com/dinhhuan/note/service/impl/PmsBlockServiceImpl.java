@@ -1,11 +1,15 @@
 package com.dinhhuan.note.service.impl;
 
 import com.dinhhuan.note.dao.PmsBlockOrderDao;
+import com.dinhhuan.note.dao.PmsBlockSearchDao;
 import com.dinhhuan.note.dto.PmsBlockParam;
+import com.dinhhuan.note.dto.SearchBlockObject;
 import com.dinhhuan.note.mapper.PmsBlockMapper;
 import com.dinhhuan.note.model.PmsBlock;
 import com.dinhhuan.note.model.PmsBlockExample;
+import com.dinhhuan.note.model.UmsUser;
 import com.dinhhuan.note.service.PmsBlockService;
+import com.dinhhuan.note.service.UmsUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -22,6 +26,10 @@ public class PmsBlockServiceImpl implements PmsBlockService {
     private PmsBlockMapper pmsBlockMapper;
     @Autowired
     private PmsBlockOrderDao pmsBlockOrderDao;
+    @Autowired
+    private PmsBlockSearchDao pmsBlockSearchDao;
+    @Autowired
+    private UmsUserService umsUserService;
 
     @Override
     public int create(PmsBlockParam param) {
@@ -75,5 +83,11 @@ public class PmsBlockServiceImpl implements PmsBlockService {
         int count = pmsBlockMapper.deleteByExample(example);
         pmsBlockOrderDao.changeOrderAfterRemove(pmsBlock.getPageId(), pmsBlock.getBlockOrder());
         return count;
+    }
+    @Override
+    public List<SearchBlockObject> search(String keyword) {
+        UmsUser currentUser = umsUserService.getCurrentUser();
+        List<SearchBlockObject> list = pmsBlockSearchDao.search(keyword, currentUser.getId());
+        return list;
     }
 }

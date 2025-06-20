@@ -1,6 +1,7 @@
 package com.dinhhuan.note.controller;
 
 import com.dinhhuan.note.common.api.CommonResult;
+import com.dinhhuan.note.dto.PageShareDto;
 import com.dinhhuan.note.dto.PmsPageParam;
 import com.dinhhuan.note.model.PmsPage;
 import com.dinhhuan.note.model.PmsPageExample;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/page")
@@ -57,6 +59,15 @@ public class PmsPageController {
         int count = pmsPageService.deletePage(pageId);
         if(count > 0){
             return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/{id}/share-info", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<PageShareDto> getPageShareInfo(@PathVariable("id") Long pageId){
+        PageShareDto page = this.pmsPageService.getGeneralInfo(pageId);
+        if(page != null){
+            return CommonResult.success(page);
         }
         return CommonResult.failed();
     }
