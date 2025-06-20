@@ -10,11 +10,13 @@ public class PmsBlock implements Serializable {
 
     private String type;
 
-    private Integer order;
+    private Integer blockOrder;
 
     private Date createdAt;
 
     private Date updatedAt;
+
+    private String idBlock;
 
     private String content;
 
@@ -44,12 +46,12 @@ public class PmsBlock implements Serializable {
         this.type = type;
     }
 
-    public Integer getOrder() {
-        return order;
+    public Integer getBlockOrder() {
+        return blockOrder;
     }
 
-    public void setOrder(Integer order) {
-        this.order = order;
+    public void setBlockOrder(Integer blockOrder) {
+        this.blockOrder = blockOrder;
     }
 
     public Date getCreatedAt() {
@@ -66,6 +68,14 @@ public class PmsBlock implements Serializable {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getIdBlock() {
+        return idBlock;
+    }
+
+    public void setIdBlock(String idBlock) {
+        this.idBlock = idBlock;
     }
 
     public String getContent() {
@@ -85,9 +95,10 @@ public class PmsBlock implements Serializable {
         sb.append(", id=").append(id);
         sb.append(", pageId=").append(pageId);
         sb.append(", type=").append(type);
-        sb.append(", order=").append(order);
+        sb.append(", blockOrder=").append(blockOrder);
         sb.append(", createdAt=").append(createdAt);
         sb.append(", updatedAt=").append(updatedAt);
+        sb.append(", idBlock=").append(idBlock);
         sb.append(", content=").append(content);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

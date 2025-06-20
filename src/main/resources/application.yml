@@ -4,7 +4,7 @@ jwt:
   tokenHeader: Authorization
   secret: WvqWxVY0NuX469fNVMVT3YsJmLevE6Vk4TOwfwqhVOaiGYLE8jTtmmclg7Zm/LOAbRJKPq5SAzlWh0NI7Y01urMPvreS13eo89hb7YaDd7k=
   expiration: 604800
-  tokenHead: 'Bearer '
+  tokenHead: "Bearer "
 spring:
   application:
     name: note-backend
@@ -19,8 +19,8 @@ spring:
       matching-strategy: ant_path_matcher
 mybatis:
   mapper-locations:
-    - classpath:com/dinhhuan/note/mapper/*.xml
-    - classpath:com/dinhhuan/note/dao/*.xml
+  - classpath*:com/dinhhuan/note/mapper/*.xml
+  - classpath:dao/*.xml
 secure:
   ignored:
     urls:
@@ -43,6 +43,6 @@ secure:
 redis:
   database: note
   key:
-    user: 'ums:user'
+    user: "ums:user"
   expire:
     common: 86400

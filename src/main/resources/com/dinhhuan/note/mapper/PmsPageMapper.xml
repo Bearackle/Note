@@ -106,10 +106,10 @@
       SELECT LAST_INSERT_ID()
     </selectKey>
     insert into pms_page (workspace_id, parent_page_id, title, 
-      created_by
+      created_by, created_at, updated_at
       )
     values (#{workspaceId,jdbcType=BIGINT}, #{parentPageId,jdbcType=BIGINT}, #{title,jdbcType=VARCHAR}, 
-      #{createdBy,jdbcType=BIGINT}
+      #{createdBy,jdbcType=BIGINT}, #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.dinhhuan.note.model.PmsPage">

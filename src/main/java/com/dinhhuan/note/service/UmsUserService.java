@@ -1,5 +1,6 @@
 package com.dinhhuan.note.service;
 
+import com.dinhhuan.note.dto.UmsUserLoginParam;
 import com.dinhhuan.note.dto.UmsUserParam;
 import com.dinhhuan.note.dto.UpdatePasswordParam;
 import com.dinhhuan.note.model.UmsUser;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface UmsUserService {
     UmsUser getUserByUsername(String username);
     UmsUser register(UmsUserParam umsUserParam);
-    String login(String username, String password);
+    String login(UmsUserLoginParam umsUserLoginParam);
     UmsUser getItem(Long id);
     List<UmsUser> list(String keyword, Integer pageSize, Integer pageNum);
     int update (Long id, UmsUser user);

@@ -5,9 +5,10 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="page_id" jdbcType="BIGINT" property="pageId" />
     <result column="type" jdbcType="VARCHAR" property="type" />
-    <result column="order" jdbcType="INTEGER" property="order" />
+    <result column="block_order" jdbcType="INTEGER" property="blockOrder" />
     <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
     <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="id_block" jdbcType="VARCHAR" property="idBlock" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.dinhhuan.note.model.PmsBlock">
     <result column="content" jdbcType="LONGVARCHAR" property="content" />
@@ -71,7 +72,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, page_id, type, order, created_at, updated_at
+    id, page_id, type, block_order, created_at, updated_at, id_block
   </sql>
   <sql id="Blob_Column_List">
     content
@@ -128,12 +129,12 @@
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into pms_block (page_id, type, order, 
-      created_at, updated_at, content
-      )
-    values (#{pageId,jdbcType=BIGINT}, #{type,jdbcType=VARCHAR}, #{order,jdbcType=INTEGER}, 
-      #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR}
-      )
+    insert into pms_block (page_id, type, block_order, 
+      created_at, updated_at, id_block, 
+      content)
+    values (#{pageId,jdbcType=BIGINT}, #{type,jdbcType=VARCHAR}, #{blockOrder,jdbcType=INTEGER}, 
+      #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP}, #{idBlock,jdbcType=VARCHAR}, 
+      #{content,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.dinhhuan.note.model.PmsBlock">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
@@ -147,14 +148,17 @@
       <if test="type != null">
         type,
       </if>
-      <if test="order != null">
-        order,
+      <if test="blockOrder != null">
+        block_order,
       </if>
       <if test="createdAt != null">
         created_at,
       </if>
       <if test="updatedAt != null">
         updated_at,
+      </if>
+      <if test="idBlock != null">
+        id_block,
       </if>
       <if test="content != null">
         content,
@@ -167,14 +171,17 @@
       <if test="type != null">
         #{type,jdbcType=VARCHAR},
       </if>
-      <if test="order != null">
-        #{order,jdbcType=INTEGER},
+      <if test="blockOrder != null">
+        #{blockOrder,jdbcType=INTEGER},
       </if>
       <if test="createdAt != null">
         #{createdAt,jdbcType=TIMESTAMP},
       </if>
       <if test="updatedAt != null">
         #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="idBlock != null">
+        #{idBlock,jdbcType=VARCHAR},
       </if>
       <if test="content != null">
         #{content,jdbcType=LONGVARCHAR},
@@ -199,14 +206,17 @@
       <if test="row.type != null">
         type = #{row.type,jdbcType=VARCHAR},
       </if>
-      <if test="row.order != null">
-        order = #{row.order,jdbcType=INTEGER},
+      <if test="row.blockOrder != null">
+        block_order = #{row.blockOrder,jdbcType=INTEGER},
       </if>
       <if test="row.createdAt != null">
         created_at = #{row.createdAt,jdbcType=TIMESTAMP},
       </if>
       <if test="row.updatedAt != null">
         updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="row.idBlock != null">
+        id_block = #{row.idBlock,jdbcType=VARCHAR},
       </if>
       <if test="row.content != null">
         content = #{row.content,jdbcType=LONGVARCHAR},
@@ -221,9 +231,10 @@
     set id = #{row.id,jdbcType=BIGINT},
       page_id = #{row.pageId,jdbcType=BIGINT},
       type = #{row.type,jdbcType=VARCHAR},
-      order = #{row.order,jdbcType=INTEGER},
+      block_order = #{row.blockOrder,jdbcType=INTEGER},
       created_at = #{row.createdAt,jdbcType=TIMESTAMP},
       updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
+      id_block = #{row.idBlock,jdbcType=VARCHAR},
       content = #{row.content,jdbcType=LONGVARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -234,9 +245,10 @@
     set id = #{row.id,jdbcType=BIGINT},
       page_id = #{row.pageId,jdbcType=BIGINT},
       type = #{row.type,jdbcType=VARCHAR},
-      order = #{row.order,jdbcType=INTEGER},
+      block_order = #{row.blockOrder,jdbcType=INTEGER},
       created_at = #{row.createdAt,jdbcType=TIMESTAMP},
-      updated_at = #{row.updatedAt,jdbcType=TIMESTAMP}
+      updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
+      id_block = #{row.idBlock,jdbcType=VARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -250,14 +262,17 @@
       <if test="type != null">
         type = #{type,jdbcType=VARCHAR},
       </if>
-      <if test="order != null">
-        order = #{order,jdbcType=INTEGER},
+      <if test="blockOrder != null">
+        block_order = #{blockOrder,jdbcType=INTEGER},
       </if>
       <if test="createdAt != null">
         created_at = #{createdAt,jdbcType=TIMESTAMP},
       </if>
       <if test="updatedAt != null">
         updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="idBlock != null">
+        id_block = #{idBlock,jdbcType=VARCHAR},
       </if>
       <if test="content != null">
         content = #{content,jdbcType=LONGVARCHAR},
@@ -269,9 +284,10 @@
     update pms_block
     set page_id = #{pageId,jdbcType=BIGINT},
       type = #{type,jdbcType=VARCHAR},
-      order = #{order,jdbcType=INTEGER},
+      block_order = #{blockOrder,jdbcType=INTEGER},
       created_at = #{createdAt,jdbcType=TIMESTAMP},
       updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      id_block = #{idBlock,jdbcType=VARCHAR},
       content = #{content,jdbcType=LONGVARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -279,9 +295,10 @@
     update pms_block
     set page_id = #{pageId,jdbcType=BIGINT},
       type = #{type,jdbcType=VARCHAR},
-      order = #{order,jdbcType=INTEGER},
+      block_order = #{blockOrder,jdbcType=INTEGER},
       created_at = #{createdAt,jdbcType=TIMESTAMP},
-      updated_at = #{updatedAt,jdbcType=TIMESTAMP}
+      updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      id_block = #{idBlock,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

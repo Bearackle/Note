@@ -44,7 +44,7 @@ public class UmsUserController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult<Map<String,String>> login(@Validated @RequestBody UmsUserLoginParam userLoginParam){
-        String token = userService.login(userLoginParam.getUsername(), userLoginParam.getPassword());
+        String token = userService.login(userLoginParam);
         if (token == null) {
             return CommonResult.validateFailed("failed to login");
         }

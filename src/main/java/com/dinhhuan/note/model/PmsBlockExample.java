@@ -295,63 +295,63 @@ public class PmsBlockExample {
             return (Criteria) this;
         }
 
-        public Criteria andOrderIsNull() {
-            addCriterion("order is null");
+        public Criteria andBlockOrderIsNull() {
+            addCriterion("block_order is null");
             return (Criteria) this;
         }
 
-        public Criteria andOrderIsNotNull() {
-            addCriterion("order is not null");
+        public Criteria andBlockOrderIsNotNull() {
+            addCriterion("block_order is not null");
             return (Criteria) this;
         }
 
-        public Criteria andOrderEqualTo(Integer value) {
-            addCriterion("order =", value, "order");
+        public Criteria andBlockOrderEqualTo(Integer value) {
+            addCriterion("block_order =", value, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderNotEqualTo(Integer value) {
-            addCriterion("order <>", value, "order");
+        public Criteria andBlockOrderNotEqualTo(Integer value) {
+            addCriterion("block_order <>", value, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderGreaterThan(Integer value) {
-            addCriterion("order >", value, "order");
+        public Criteria andBlockOrderGreaterThan(Integer value) {
+            addCriterion("block_order >", value, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderGreaterThanOrEqualTo(Integer value) {
-            addCriterion("order >=", value, "order");
+        public Criteria andBlockOrderGreaterThanOrEqualTo(Integer value) {
+            addCriterion("block_order >=", value, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderLessThan(Integer value) {
-            addCriterion("order <", value, "order");
+        public Criteria andBlockOrderLessThan(Integer value) {
+            addCriterion("block_order <", value, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderLessThanOrEqualTo(Integer value) {
-            addCriterion("order <=", value, "order");
+        public Criteria andBlockOrderLessThanOrEqualTo(Integer value) {
+            addCriterion("block_order <=", value, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderIn(List<Integer> values) {
-            addCriterion("order in", values, "order");
+        public Criteria andBlockOrderIn(List<Integer> values) {
+            addCriterion("block_order in", values, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderNotIn(List<Integer> values) {
-            addCriterion("order not in", values, "order");
+        public Criteria andBlockOrderNotIn(List<Integer> values) {
+            addCriterion("block_order not in", values, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderBetween(Integer value1, Integer value2) {
-            addCriterion("order between", value1, value2, "order");
+        public Criteria andBlockOrderBetween(Integer value1, Integer value2) {
+            addCriterion("block_order between", value1, value2, "blockOrder");
             return (Criteria) this;
         }
 
-        public Criteria andOrderNotBetween(Integer value1, Integer value2) {
-            addCriterion("order not between", value1, value2, "order");
+        public Criteria andBlockOrderNotBetween(Integer value1, Integer value2) {
+            addCriterion("block_order not between", value1, value2, "blockOrder");
             return (Criteria) this;
         }
 
@@ -472,6 +472,76 @@ public class PmsBlockExample {
 
         public Criteria andUpdatedAtNotBetween(Date value1, Date value2) {
             addCriterion("updated_at not between", value1, value2, "updatedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockIsNull() {
+            addCriterion("id_block is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockIsNotNull() {
+            addCriterion("id_block is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockEqualTo(String value) {
+            addCriterion("id_block =", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockNotEqualTo(String value) {
+            addCriterion("id_block <>", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockGreaterThan(String value) {
+            addCriterion("id_block >", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockGreaterThanOrEqualTo(String value) {
+            addCriterion("id_block >=", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockLessThan(String value) {
+            addCriterion("id_block <", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockLessThanOrEqualTo(String value) {
+            addCriterion("id_block <=", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockLike(String value) {
+            addCriterion("id_block like", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockNotLike(String value) {
+            addCriterion("id_block not like", value, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockIn(List<String> values) {
+            addCriterion("id_block in", values, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockNotIn(List<String> values) {
+            addCriterion("id_block not in", values, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockBetween(String value1, String value2) {
+            addCriterion("id_block between", value1, value2, "idBlock");
+            return (Criteria) this;
+        }
+
+        public Criteria andIdBlockNotBetween(String value1, String value2) {
+            addCriterion("id_block not between", value1, value2, "idBlock");
             return (Criteria) this;
         }
     }

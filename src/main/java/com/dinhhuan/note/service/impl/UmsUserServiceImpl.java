@@ -2,6 +2,7 @@ package com.dinhhuan.note.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.dinhhuan.note.dto.UmsUserLoginParam;
 import com.github.pagehelper.PageHelper;
 import com.dinhhuan.note.bo.MemberUserDetails;
 import com.dinhhuan.note.common.exception.Assert;
@@ -76,11 +77,11 @@ public class UmsUserServiceImpl implements UmsUserService {
         return user;
     }
     @Override
-    public String login(String username, String password) {
+    public String login(UmsUserLoginParam umsUserLoginParam) {
         String token = null;
         try{
-            UserDetails userDetails = loadUserByUsername(username);
-            if(!passwordEncoder.matches(password, userDetails.getPassword())){
+            UserDetails userDetails = loadUserByUsername(umsUserLoginParam.getUsername());
+            if(!passwordEncoder.matches(umsUserLoginParam.getPassword(), userDetails.getPassword())){
                 Assert.fail("wrong password");
             }
             if(!userDetails.isEnabled()){

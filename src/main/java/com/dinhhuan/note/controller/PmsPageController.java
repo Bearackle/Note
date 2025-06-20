@@ -43,7 +43,7 @@ public class PmsPageController {
         }
         return CommonResult.failed();
     }
-    @RequestMapping(value = "/{id}/update" , method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}" , method = RequestMethod.PUT)
     @ResponseBody
     public CommonResult<Integer> update(@PathVariable("id") Long pageId, @RequestBody PmsPageParam param){
         int count = pmsPageService.update(pageId, param);

@@ -23,6 +23,13 @@ logging:
   level:
     root: info
     com.dinhhuan.note: debug
+    org:
+      apache:
+        ibatis: DEBUG
+    com:
+      dinhhuan:
+        note:
+          mapper: DEBUG
 logstash:
   host: localhost
   enableInnerLog: false

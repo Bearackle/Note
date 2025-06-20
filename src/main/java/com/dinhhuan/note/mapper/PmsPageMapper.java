@@ -24,7 +24,7 @@ public interface PmsPageMapper {
 
     int updateByExample(@Param("row") PmsPage row, @Param("example") PmsPageExample example);
 
-    int     updateByPrimaryKeySelective(PmsPage row);
+    int updateByPrimaryKeySelective(PmsPage row);
 
     int updateByPrimaryKey(PmsPage row);
 }
