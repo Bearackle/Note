@@ -26,7 +26,9 @@ export const usePageStore = defineStore("page", {
           version: "2.30.0",
         },
       };
-      this.setPages([...this.pages, newPage]);
+      if (this.pages != null) {
+        this.setPages([...this.pages, newPage]);
+      }
       this.setSelectedPage(newPage.id);
       this.currentContent = newPage.content;
       return newPage;

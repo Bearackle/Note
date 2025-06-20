@@ -1,35 +1,45 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <div class="login-title">Life is short.</div>
-      <div class="login-subtitle">Đăng nhập tài khoản của bạn</div>
+      <div class="login-title">Make it happen.</div>
+      <div class="login-subtitle">Đăng ký tài khoản của bạn</div>
       <n-space vertical :size="12" class="login-buttons">
-        <n-button block secondary>
-          <template #icon>
-            <n-icon><Icon icon="devicon:google" /></n-icon>
-          </template>
-          Tiếp tục với google
-        </n-button>
-        <n-button block secondary @click="handleCreateAccount">
-          <template #icon>
-            <n-icon><Icon icon="twemoji:crossed-swords" /></n-icon>
-          </template>
-          Tạo tài khoản của bạn
-        </n-button>
+        <n-button block secondary icon="logos:google"
+          >Tiếp tục với google</n-button
+        >
       </n-space>
       <n-divider>or</n-divider>
       <n-input
         v-model:value="username"
         placeholder="Tên người dùng..."
+        clearable
         class="login-input"
+      />
+      <n-input
+        v-model:value="email"
+        placeholder="Nhập email của bạn..."
+        class="login-input"
+        type="email"
       />
       <n-input
         v-model:value="password"
         placeholder="Mật khẩu..."
         class="login-input"
         type="password"
+        showPasswordOn="click"
       />
-      <n-button block type="primary" class="login-continue" @click="handleLogin"
+      <n-input
+        v-model:value="confirmPassword"
+        placeholder="Nhập lại mật khẩu..."
+        class="login-input"
+        type="password"
+        showPasswordOn="click"
+      />
+      <n-button
+        block
+        type="primary"
+        class="login-continue"
+        @click="handleRegister"
         >Continue</n-button
       >
       <div class="login-footer">
@@ -41,23 +51,15 @@
   </div>
 </template>
 <script>
-import api from "@/api/axios";
+import api from "../../../api/axios";
 import { useMessage } from "naive-ui";
-import { useUserStore } from "@/store/user";
-import Cookies from "js-cookie";
-import { Icon } from "@iconify/vue";
+
 export default {
-  name: "Login",
-  components: {
-    Icon,
-  },
+  name: "Register",
   setup() {
     const message = useMessage();
-    const userStore = useUserStore();
     return {
       message,
-      userStore,
-      Cookies,
     };
   },
   data() {
@@ -65,25 +67,42 @@ export default {
       email: "",
       username: "",
       password: "",
+      confirmPassword: "",
     };
   },
   methods: {
-    async handleLogin() {
-      const response = await api.post("/user/login", {
-        username: this.username,
-        password: this.password,
-      });
-      if (response.data.code === 200) {
-        localStorage.setItem("token", response.data.data.token);
-        this.$router.push("/note");
-        this.userStore.setUser(this.username);
-        this.Cookies.set("username", this.username, { expires: 7 });
-      } else {
-        this.message.error("Đăng nhập thất bại");
+    async handleRegister() {
+      if (
+        !this.username ||
+        !this.email ||
+        !this.password ||
+        !this.confirmPassword
+      ) {
+        this.message.error("Vui lòng điền đầy đủ thông tin");
+        return;
       }
-    },
-    handleCreateAccount() {
-      this.$router.push("/register");
+
+      if (this.password !== this.confirmPassword) {
+        this.message.error("Mật khẩu không khớp");
+        return;
+      }
+
+      try {
+        const response = await api.post("/user/register", {
+          username: this.username,
+          email: this.email,
+          password: this.password,
+        });
+        console.log(response);
+        if (response.data.code === 200) {
+          this.message.success("Đăng ký thành công");
+          this.$router.push("/login");
+        } else {
+          this.message.error("Đăng ký thất bại");
+        }
+      } catch (error) {
+        this.message.error(error.response?.data?.message || "Đăng ký thất bại");
+      }
     },
   },
 };

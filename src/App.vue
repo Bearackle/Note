@@ -1,14 +1,21 @@
 <template>
-  <div id="app">
-    <div class="app-content">
-      <router-view />
+  <n-message-provider placement="bottom-right">
+    <div id="app">
+      <div class="app-content">
+        <router-view />
+      </div>
     </div>
-  </div>
+  </n-message-provider>
 </template>
 
 <script>
+import { NMessageProvider } from "naive-ui";
+
 export default {
   name: "App",
+  components: {
+    NMessageProvider,
+  },
 };
 </script>
 

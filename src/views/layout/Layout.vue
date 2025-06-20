@@ -13,7 +13,7 @@
         <Sidebar></Sidebar>
       </n-layout-sider>
       <n-layout-content
-        content-style="padding: 24px; flex:1; width: 100%; height: 100%;"
+        content-style="padding: 24px; flex: 1; width: 100%; height: 100%;"
       >
         <div style="height: 100%">
           <router-view style="height: 100%; width: 100%" />

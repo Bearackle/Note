@@ -1,11 +1,11 @@
 <template>
   <div class="account">
-    <n-avatar
-      round
-      size="medium"
-      style="background-color: #2080f0; color: white"
-    >
-      M
+    <n-avatar size="medium" style="background-color: #2080f0; color: white">
+      {{
+        Cookies.get("username")
+          ? Cookies.get("username").charAt(0).toUpperCase()
+          : "U"
+      }}
     </n-avatar>
     <n-dropdown trigger="hover" :options="options">
       <div class="account-wrapper">
@@ -14,19 +14,27 @@
     </n-dropdown>
   </div>
   <div class="home">
-    <n-button quaternary>
-      <n-icon size="24" style="margin-right: 20px">
-        <Home />
-      </n-icon>
-      <n-text>Home</n-text>
+    <n-button quaternary @click="handleHomeClick">
+      <template #icon>
+        <n-icon size="24" style="margin-right: 20px; margin-left: 18px">
+          <Icon icon="logos:google-home" />
+        </n-icon>
+      </template>
+      <n-text style="margin-right: 20px; margin-left: 20px; size: 1rem"
+        >Home</n-text
+      >
     </n-button>
   </div>
   <div class="inbox">
     <n-button quaternary>
-      <n-icon size="24" style="margin-right: 20px">
-        <MailUnread />
-      </n-icon>
-      <n-text>Inbox</n-text>
+      <template #icon>
+        <n-icon size="28" style="margin-right: 20px; margin-left: 18px">
+          <Icon icon="material-icon-theme:3d" />
+        </n-icon>
+      </template>
+      <n-text style="margin-right: 20px; margin-left: 20px; size: 1rem"
+        >Inbox</n-text
+      >
     </n-button>
   </div>
   <div class="workspace">
@@ -63,9 +71,11 @@
                       workspaceStore.selectedSpace === workspace.id,
                   }"
                 >
-                  <n-icon size="16" class="workspace-icon">
-                    <PlanetOutline />
-                  </n-icon>
+                  <template #icon>
+                    <n-icon size="18" class="workspace-icon">
+                      <Icon icon="fluent-color:planet-16" />
+                    </n-icon>
+                  </template>
                   {{ workspace.name }}
                 </n-button>
               </div>
@@ -132,9 +142,11 @@
                       'page-selected': pageStore.selectedPage === page.id,
                     }"
                   >
-                    <n-icon size="16" class="page-icon">
-                      <DocumentTextOutline />
-                    </n-icon>
+                    <template #icon>
+                      <n-icon size="19" class="page-icon">
+                        <Icon icon="material-icon-theme:document" />
+                      </n-icon>
+                    </template>
                     {{ page.title }}
                   </n-button>
                 </div>
@@ -185,7 +197,7 @@
   </div>
   <div class="nailed-section">
     <n-button quaternary block>
-      <n-icon size="24" style="margin-right: 16px">
+      <n-icon size="24" style="margin-right: 16px; margin-left: 0px">
         <PersonAdd />
       </n-icon>
       <span>Mời thành viên</span>
@@ -232,9 +244,33 @@
       </n-form-item>
     </n-form>
   </n-modal>
+
+  <!-- Settings Modal -->
+  <n-modal
+    v-model:show="showSettingsModal"
+    title="Cài đặt"
+    preset="dialog"
+    positive-text="Lưu"
+    negative-text="Hủy"
+    @positive-click="handleSaveSettings"
+    @negative-click="showSettingsModal = false"
+  >
+    <n-form ref="settingsFormRef" :model="settingsForm" :rules="settingsRules">
+      <n-form-item label="Tên người dùng" path="username">
+        <n-input
+          v-model:value="settingsForm.username"
+          placeholder="Nhập tên người dùng"
+        />
+      </n-form-item>
+      <n-form-item label="Email" path="email">
+        <n-input v-model:value="settingsForm.email" placeholder="Nhập email" />
+      </n-form-item>
+    </n-form>
+  </n-modal>
 </template>
 <script>
-import { defineComponent, ref, onMounted, computed } from "vue";
+import { defineComponent, ref, onMounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import {
   MailUnread,
   ShareSocial,
@@ -250,7 +286,9 @@ import api from "../../api/axios";
 import { useWorkspaceStore } from "../../store/workspace";
 import { usePageStore } from "../../store/page";
 import { useBlockStore } from "../../store/block";
-
+import { useUserStore } from "../../store/user";
+import Cookies from "js-cookie";
+import { Icon } from "@iconify/vue";
 export default defineComponent({
   name: "Sidebar",
   components: {
@@ -263,11 +301,15 @@ export default defineComponent({
     EllipsisVertical,
     PlanetOutline,
     PersonAdd,
+    Icon,
   },
   setup() {
+    const router = useRouter();
+    const route = useRoute();
     console.log("Sidebar setup initialized");
     const showModalWorkspace = ref(false);
     const showModelPage = ref(false);
+    const showSettingsModal = ref(false);
     const formRefPage = ref(null);
     const formDataPage = ref({
       name: "",
@@ -284,6 +326,7 @@ export default defineComponent({
     const isLoadingPages = ref(false);
     const workspaceStore = useWorkspaceStore();
     const pageStore = usePageStore();
+    const userStore = useUserStore();
     const formRules = {
       name: {
         required: true,
@@ -314,6 +357,24 @@ export default defineComponent({
       },
     };
 
+    const settingsFormRef = ref(null);
+    const settingsForm = ref({
+      username: Cookies.get("username") || "",
+      email: "",
+    });
+    const settingsRules = {
+      username: {
+        required: true,
+        message: "Vui lòng nhập tên người dùng",
+        trigger: "blur",
+      },
+      email: {
+        required: true,
+        message: "Vui lòng nhập email",
+        trigger: "blur",
+      },
+    };
+
     const fetchWorkspaces = async () => {
       console.log("Starting fetchWorkspaces");
       try {
@@ -334,9 +395,12 @@ export default defineComponent({
           else if (typeof response.data === "object") {
             workspaces.value = Object.values(response.data);
           }
+        } else {
+          workspaces.value = [];
         }
       } catch (error) {
         console.error("Error fetching workspaces:", error);
+        workspaces.value = [];
       } finally {
         isLoading.value = false;
       }
@@ -440,6 +504,9 @@ export default defineComponent({
         blocks: blocks,
       });
       console.log("Store content after update:", pageStore.currentContent);
+
+      // Navigate to /note/edit route
+      router.push("/note/edit");
     };
     const handleUpdatePageTitle = (page) => {
       console.log("Opening update modal for page:", page);
@@ -492,9 +559,59 @@ export default defineComponent({
         console.error("Error deleting page:", error);
       }
     };
+
+    const handleHomeClick = () => {
+      // Clear selections
+      workspaceStore.setSelectedSpace(null);
+      pageStore.setSelectedPage(null);
+      pageStore.setSelectedTitle(null);
+      pageStore.setCurrentContent(null);
+      router.push("/note");
+    };
+
+    const handleSaveSettings = async () => {
+      try {
+        await settingsFormRef.value?.validate();
+        // Here you would typically make an API call to save the settings
+        console.log("Saving settings:", settingsForm.value);
+        showSettingsModal.value = false;
+      } catch (error) {
+        console.error("Error saving settings:", error);
+      }
+    };
+
+    const handleOptionClick = (key) => {
+      if (key === "settings") {
+        showSettingsModal.value = true;
+      } else if (key === "brown's hotel, london") {
+        // Handle logout
+        Cookies.remove("username");
+        router.push("/login");
+      }
+    };
+
+    // Watch for route changes
+    watch(
+      () => route.path,
+      (newPath) => {
+        if (newPath === "/note") {
+          // Clear selections when on home route
+          workspaceStore.setSelectedSpace(null);
+          pageStore.setSelectedPage(null);
+          pageStore.setSelectedTitle(null);
+          pageStore.setCurrentContent(null);
+        }
+      }
+    );
+
     // Initialize data
     onMounted(async () => {
       console.log("Sidebar component mounted");
+      // Check if username cookie exists
+      if (!Cookies.get("username")) {
+        router.push("/login");
+        return;
+      }
       await fetchWorkspaces();
     });
     return {
@@ -514,18 +631,27 @@ export default defineComponent({
       handleUpdatePageTitle,
       handleDeletePage,
       confirmDeletePage,
+      handleHomeClick,
       options: [
         {
           label: "Cài đặt",
           key: "settings",
+          props: {
+            onClick: () => handleOptionClick("settings"),
+          },
         },
         {
           label: "Đăng xuất",
           key: "brown's hotel, london",
+          props: {
+            onClick: () => handleOptionClick("brown's hotel, london"),
+          },
         },
       ],
       workspaceStore,
       pageStore,
+      userStore,
+      Cookies,
       expandedNames,
       showDeleteModal,
       showUpdateTitleModal,
@@ -533,6 +659,12 @@ export default defineComponent({
       updateTitleForm,
       updateTitleRules,
       confirmUpdateTitle,
+      showSettingsModal,
+      settingsFormRef,
+      settingsForm,
+      settingsRules,
+      handleSaveSettings,
+      handleOptionClick,
     };
   },
 });
