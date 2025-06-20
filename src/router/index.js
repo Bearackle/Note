@@ -4,6 +4,7 @@ import Editor from "@/views/nms/EditorView.vue";
 import Login from "@/views/ums/login/index.vue";
 import HomeView from "@/views/nms/HomeView.vue";
 import Register from "@/views/ums/register/index.vue";
+import ShareViewRedirect from "@/views/nms/ShareViewRedirect.vue";
 const routes = [
   {
     path: "/note",
@@ -26,6 +27,10 @@ const routes = [
   {
     path: "/register",
     component: Register,
+  },
+  {
+    path: "/share/:pageId",
+    component: ShareViewRedirect,
   },
 ];
 const router = createRouter({

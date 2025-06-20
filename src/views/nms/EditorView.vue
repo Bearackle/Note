@@ -34,6 +34,30 @@
       @update:content="handleContent"
       @onChange:content="handleChange"
     />
+    <!-- Share Modal -->
+    <div v-if="shareModalVisible" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Share your work</h3>
+          <button class="close-btn" @click="shareModalVisible = false">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="share-url">
+            <label>URL:</label>
+            <input type="text" readonly :value="shareUrl" />
+          </div>
+          <div class="share-role">
+            <label>Role:</label>
+            <select v-model="shareRole">
+              <option value="viewer">Viewer</option>
+              <option value="editor">Editor</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -53,6 +77,8 @@ export default {
       isEditing: false,
       tempTitle: "",
       statusTimeout: null,
+      shareModalVisible: false,
+      shareRole: "viewer",
     };
   },
   setup() {
@@ -60,6 +86,11 @@ export default {
     return {
       pageStore,
     };
+  },
+  computed: {
+    shareUrl() {
+      return `localhost:5173/share/${this.pageStore.selectedPage || ""}`;
+    },
   },
   created() {
     // Create debounced function once
@@ -104,7 +135,7 @@ export default {
       this.debouncedUpdateStatus("Saved");
     },
     handleShare() {
-      console.log("Share button clicked");
+      this.shareModalVisible = true;
     },
     updateApiStatus(status) {
       this.isApiLoading = status === "loading";
@@ -275,5 +306,55 @@ export default {
   width: 100%;
   height: 100%;
   min-width: 100%;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  min-width: 320px;
+  max-width: 90vw;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.modal-body label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+.share-url input {
+  width: 100%;
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.share-role select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="home-container">
-    <h1 class="welcome-text">Hello Huan</h1>
+    <h1 class="welcome-text">Hello, how do you do</h1>
 
     <div class="search-section">
       <input
@@ -9,6 +9,20 @@
         placeholder="Search..."
         v-model="searchQuery"
       />
+      <div v-if="searchResults.length > 0" class="search-popup">
+        <ul>
+          <li
+            v-for="(item, idx) in searchResults"
+            :key="item.pageId"
+            class="search-result-item"
+            @click="handlePageClick(item.pageId)"
+          >
+            <div class="result-title">{{ item.pageTitle }}</div>
+            <div class="result-content">{{ item.blockContent }}</div>
+            <div class="result-meta">{{ item.workspaceName }}</div>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="recent-pages">
@@ -28,6 +42,10 @@
 </template>
 
 <script>
+import api from "../../api/axios";
+import { usePageStore } from "@/store/page";
+import { useBlockStore } from "@/store/block";
+import { useRouter } from "vue-router";
 export default {
   name: "HomeView",
   data() {
@@ -38,7 +56,81 @@ export default {
         { name: "Settings", lastOpened: "Yesterday" },
         { name: "Profile", lastOpened: "3 days ago" },
       ],
+      debouncedSearch: null,
+      searchResults: [],
+      pageStore: usePageStore(),
+      blockStore: useBlockStore(),
+      router: useRouter(),
     };
+  },
+  methods: {
+    debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          func.apply(this, args);
+        }, wait);
+      };
+    },
+    fulltextSearch(query) {
+      console.log("debounced search", query);
+      api
+        .get("/block/search", {
+          params: {
+            keyword: query,
+          },
+        })
+        .then((response) => {
+          console.log("API response:", response);
+          this.searchResults = Array.isArray(response.data)
+            ? response.data
+            : response.data && Array.isArray(response.data.data)
+            ? response.data.data
+            : [];
+          console.log("Set searchResults:", this.searchResults);
+        });
+    },
+    async handlePageClick(pageId) {
+      this.pageStore.setSelectedPage(pageId);
+      this.pageStore.setSelectedTitle(
+        this.searchResults.find((page) => page.pageId === pageId)?.pageTitle
+      );
+      console.log("Selected title:", this.pageStore.selectedTitle);
+      const response = await api.get("/block/list/" + pageId);
+      console.log("Response from block/list:", response.data);
+      if (response.data.data == null) {
+        useBlockStore.selectedBlockIndex = 0;
+      }
+      // Access the nested data array from response.data.data
+      const blocks = Array.isArray(response.data.data)
+        ? response.data.data.map((element) => ({
+            type: element.type,
+            data: JSON.parse(element.content),
+            id: element.idBlock,
+          }))
+        : [];
+
+      console.log("Transformed blocks:", blocks);
+
+      this.pageStore.setCurrentContent({
+        time: new Date().getTime(),
+        version: "2.30.0",
+        blocks: blocks,
+      });
+      console.log("Store content after update:", this.pageStore.currentContent);
+
+      // Navigate to /note/edit route
+      this.router.push("/note/edit");
+    },
+  },
+  mounted() {
+    this.debouncedSearch = this.debounce(this.fulltextSearch, 300);
+  },
+  watch: {
+    searchQuery(newQuery) {
+      this.debouncedSearch(newQuery);
+    },
   },
 };
 </script>
@@ -60,6 +152,7 @@ export default {
 
 .search-section {
   margin-bottom: 2rem;
+  position: relative;
 }
 
 .search-bar {
@@ -74,6 +167,46 @@ export default {
 .search-bar:focus {
   outline: none;
   border-color: #42b983;
+}
+
+.search-popup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.result-title {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.result-content {
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+.result-meta {
+  color: #888;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .recent-pages {
