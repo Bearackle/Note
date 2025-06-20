@@ -14,7 +14,10 @@ import { useBlockStore } from "../store/block";
 import { watch, onMounted, ref, toRaw } from "vue";
 import { diff } from "deep-diff";
 import { debounce, method, update } from "lodash";
+import Marker from "@editorjs/marker";
+import InlineCode from "@editorjs/inline-code";
 import api from "../api/axios";
+import ImageTool from "@editorjs/image";
 export default {
   name: "Editor",
   props: {
@@ -34,7 +37,21 @@ export default {
         tools: {
           header: Header,
           list: List,
-          paragraph: Paragraph,
+          paragraph: {
+            class: Paragraph,
+            inlineToolbar: ["bold", "italic", "marker", "inlineCode"],
+          },
+          marker: Marker,
+          inlineCode: InlineCode,
+          image: {
+            class: ImageTool,
+            config: {
+              endpoints: {
+                byFile: "http://localhost:8080/oss/upload",
+              },
+              field: "image",
+            },
+          },
         },
         data: pageStore.currentContent,
         onReady: () => {
