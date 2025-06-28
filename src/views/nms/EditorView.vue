@@ -29,11 +29,13 @@
         </button>
       </div>
     </div>
-    <Editor
-      class="editor"
-      @update:content="handleContent"
-      @onChange:content="handleChange"
-    />
+    <div class="editor-wrapper">
+      <Editor
+        class="editor"
+        @update:content="handleContent"
+        @onChange:content="handleChange"
+      />
+    </div>
     <!-- Share Modal -->
     <div v-if="shareModalVisible" class="modal-overlay">
       <div class="modal-content">
@@ -180,18 +182,23 @@ export default {
   height: 100vh;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
 .taskbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  /* background-color: #f5f5f5; */
-  /* border-bottom: 1px solid #e0e0e0; */
-  margin-bottom: 2rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 60px; /* Fixed height for taskbar */
 }
 
 .taskbar-left {
@@ -301,11 +308,21 @@ export default {
   }
 }
 
-.editor {
-  flex: 1;
-  width: 100%;
+.editor-wrapper {
+  padding-top: 60px; /* Same as taskbar height */
   height: 100%;
+  width: 100%;
   min-width: 100%;
+  overflow-y: auto;
+  position: relative;
+}
+
+.editor {
+  padding-top: 60px; /* Same as taskbar height */
+  height: 100%;
+  width: 100%;
+  min-width: 100%;
+  overflow-y: auto;
 }
 
 .modal-overlay {

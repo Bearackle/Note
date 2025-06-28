@@ -10,7 +10,6 @@
 
 <script>
 import { NMessageProvider } from "naive-ui";
-
 export default {
   name: "App",
   components: {

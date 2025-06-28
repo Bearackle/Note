@@ -1,15 +1,20 @@
 <template>
   <div class="account">
-    <n-avatar size="medium" style="background-color: #2080f0; color: white">
-      {{
-        Cookies.get("username")
-          ? Cookies.get("username").charAt(0).toUpperCase()
-          : "U"
-      }}
-    </n-avatar>
     <n-dropdown trigger="hover" :options="options">
       <div class="account-wrapper">
-        <n-button>Tài khoản</n-button>
+        <n-avatar size="medium" style="background-color: #2080f0; color: white">
+          {{
+            Cookies.get("username")
+              ? Cookies.get("username").charAt(0).toUpperCase()
+              : "U"
+          }}
+        </n-avatar>
+        <div class="account-info">
+          <span class="username">{{ Cookies.get("username") || "User" }}</span>
+          <n-icon size="16" class="dropdown-icon">
+            <Icon icon="material-symbols:keyboard-arrow-down-rounded" />
+          </n-icon>
+        </div>
       </div>
     </n-dropdown>
   </div>
@@ -289,6 +294,7 @@ import { useBlockStore } from "../../store/block";
 import { useUserStore } from "../../store/user";
 import Cookies from "js-cookie";
 import { Icon } from "@iconify/vue";
+import { useRecentSelectionsStore } from "@/store/recentSelections";
 export default defineComponent({
   name: "Sidebar",
   components: {
@@ -374,7 +380,20 @@ export default defineComponent({
         trigger: "blur",
       },
     };
-
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/user/info");
+        if (response.data) {
+          settingsForm.value = {
+            username: response.data.data.username || "",
+            email: response.data.data.email || "",
+          };
+          console.log("User data fetched:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
     const fetchWorkspaces = async () => {
       console.log("Starting fetchWorkspaces");
       try {
@@ -506,6 +525,10 @@ export default defineComponent({
       console.log("Store content after update:", pageStore.currentContent);
 
       // Navigate to /note/edit route
+      useRecentSelectionsStore().addSelection({
+        id: pageId,
+        title: pageStore.selectedTitle,
+      });
       router.push("/note/edit");
     };
     const handleUpdatePageTitle = (page) => {
@@ -580,9 +603,10 @@ export default defineComponent({
       }
     };
 
-    const handleOptionClick = (key) => {
+    const handleOptionClick = async (key) => {
       if (key === "settings") {
         showSettingsModal.value = true;
+        await fetchUser();
       } else if (key === "brown's hotel, london") {
         // Handle logout
         Cookies.remove("username");
@@ -671,6 +695,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* Add a root style to apply Inter font to all elements */
+:deep(*) {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-weight: 400;
+}
+
 .inbox,
 .home,
 .account {
@@ -683,8 +714,37 @@ export default defineComponent({
 .account-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.account-wrapper:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--n-text-color);
+}
+
+.dropdown-icon {
+  color: var(--n-text-color-3);
+  transition: transform 0.2s ease;
+}
+
+.account-wrapper:hover .dropdown-icon {
+  transform: translateY(2px);
 }
 
 .workspace,
@@ -749,7 +809,7 @@ export default defineComponent({
 .workspace-item .n-button,
 .page-item .n-button {
   text-align: left;
-  padding: 8px;
+  padding: 2px 8px;
   color: inherit !important;
 }
 
@@ -785,7 +845,7 @@ export default defineComponent({
 .page-content .n-button {
   width: 100%;
   text-align: left;
-  padding: 8px;
+  padding: 4px 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -808,17 +868,16 @@ export default defineComponent({
 
 .page-actions-selected {
   opacity: 1 !important;
-  border-radius: 0 !important;
-  background-color: rgba(0, 0, 0, 0) !important;
+  background-color: transparent !important;
 }
 
 .page-item:hover .page-actions {
-  /* opacity: 1; */
-  background-color: rgba(0, 0, 0, 0.1) !important;
+  opacity: 1;
+  background-color: transparent !important;
 }
 
 .page-item:hover .page-actions:hover {
-  background-color: rgba(0, 0, 0, 0.1) !important;
+  background-color: transparent !important;
 }
 
 .page-icon {

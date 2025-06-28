@@ -1,4 +1,7 @@
-@import './base.css';
+/* Import Inter font from Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap");
+
+@import "./base.css";
 
 #app {
   max-width: 1280px;

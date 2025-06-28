@@ -47,9 +47,12 @@ export default {
             class: ImageTool,
             config: {
               endpoints: {
-                byFile: "http://localhost:8080/oss/upload",
+                byFile: import.meta.env.VITE_OSS_URL,
               },
               field: "image",
+              additionalRequestHeaders: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+              },
             },
           },
         },
