@@ -17,7 +17,7 @@ import api from "../../api/axios";
 import { usePageStore } from "@/store/page";
 import { useBlockStore } from "@/store/block";
 import { ref, onMounted } from "vue";
-
+import { useHashids } from "../../utils/useHashids";
 const router = useRouter();
 const route = useRoute();
 const pageStore = usePageStore();
@@ -29,8 +29,9 @@ const authorInitial = ref("");
 
 onMounted(async () => {
   try {
+    const { decode } = useHashids();
     const response = await api.get(
-      "/page/" + route.params.pageId + "/share-info"
+      "/page/" + decode(route.params.pageId) + "/share-info"
     );
     if (response.data && response.data.data) {
       pageTitle.value = response.data.data.title;
@@ -44,7 +45,9 @@ onMounted(async () => {
   }
 });
 
-async function handleNoteGet(pageId) {
+async function handleNoteGet(page) {
+  const { decode } = useHashids();
+  const pageId = decode(page);
   pageStore.setSelectedPage(pageId);
   pageStore.setSelectedTitle(pageTitle.value);
   try {

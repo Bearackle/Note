@@ -77,7 +77,9 @@ export default {
         localStorage.setItem("token", response.data.data.token);
         this.$router.push("/note");
         this.userStore.setUser(this.username);
+        const userInfo = await api.get("/user/info");
         this.Cookies.set("username", this.username, { expires: 7 });
+        this.Cookies.set("email", userInfo.data.data.email, { expires: 7 });
       } else {
         this.message.error("Đăng nhập thất bại");
       }

@@ -1,54 +1,191 @@
 <template>
   <div class="account">
-    <n-dropdown trigger="hover" :options="options">
+    <n-dropdown
+      trigger="click"
+      :options="options"
+      placement="bottom-start"
+      @select="handleOptionClick"
+    >
       <div class="account-wrapper">
-        <n-avatar size="medium" style="background-color: #2080f0; color: white">
-          {{
-            Cookies.get("username")
-              ? Cookies.get("username").charAt(0).toUpperCase()
-              : "U"
-          }}
-        </n-avatar>
+        <div class="avatar-container">
+          <n-avatar
+            size="medium"
+            style="background: linear-gradient(135deg, #2080f0, #00e676)"
+          >
+            {{
+              Cookies.get("username")
+                ? Cookies.get("username").charAt(0).toUpperCase()
+                : "U"
+            }}
+          </n-avatar>
+        </div>
         <div class="account-info">
-          <span class="username">{{ Cookies.get("username") || "User" }}</span>
-          <n-icon size="16" class="dropdown-icon">
-            <Icon icon="material-symbols:keyboard-arrow-down-rounded" />
-          </n-icon>
+          <div class="user-details">
+            <span class="username">{{
+              Cookies.get("username") || "User"
+            }}</span>
+            <span class="user-email">{{ userEmail }}</span>
+          </div>
         </div>
       </div>
     </n-dropdown>
   </div>
+  <div class="quick-actions">
+    <n-tooltip placement="right" trigger="hover">
+      <template #trigger>
+        <n-button quaternary circle class="action-button">
+          <n-icon size="18"
+            ><Icon icon="material-symbols:search-rounded"
+          /></n-icon>
+        </n-button>
+      </template>
+      Quick Search
+    </n-tooltip>
+
+    <n-tooltip placement="right" trigger="hover">
+      <template #trigger>
+        <n-button quaternary circle class="action-button">
+          <n-icon size="18"
+            ><Icon icon="material-symbols:notifications-rounded"
+          /></n-icon>
+          <div class="notification-badge">3</div>
+        </n-button>
+      </template>
+      Notifications
+    </n-tooltip>
+  </div>
   <div class="home">
-    <n-button quaternary @click="handleHomeClick">
+    <n-button quaternary @click="handleHomeClick" class="nav-button primary">
       <template #icon>
-        <n-icon size="24" style="margin-right: 20px; margin-left: 18px">
-          <Icon icon="logos:google-home" />
+        <n-icon size="20">
+          <Icon icon="material-symbols:home-rounded" />
         </n-icon>
       </template>
-      <n-text style="margin-right: 20px; margin-left: 20px; size: 1rem"
-        >Home</n-text
-      >
+      Home
     </n-button>
   </div>
   <div class="inbox">
-    <n-button quaternary>
+    <n-button quaternary class="nav-button secondary">
       <template #icon>
-        <n-icon size="28" style="margin-right: 20px; margin-left: 18px">
-          <Icon icon="material-icon-theme:3d" />
+        <n-icon size="20">
+          <Icon icon="material-symbols:inbox-rounded" />
         </n-icon>
       </template>
-      <n-text style="margin-right: 20px; margin-left: 20px; size: 1rem"
-        >Inbox</n-text
-      >
+      Inbox
+      <div class="inbox-counter">5</div>
     </n-button>
   </div>
   <div class="workspace">
     <n-collapse>
+      <n-collapse-item name="2">
+        <template #header>
+          <div class="collapse-header">
+            <div class="header-content">
+              <n-icon size="18" class="section-icon team-icon">
+                <Icon icon="material-symbols:group-rounded" />
+              </n-icon>
+              <span>Teamspace</span>
+            </div>
+            <n-button
+              quaternary
+              size="small"
+              @click.stop="handleAddTeam"
+              class="add-button"
+            >
+              <n-icon size="16">
+                <Add />
+              </n-icon>
+            </n-button>
+          </div>
+        </template>
+        <n-spin :show="isLoadingTeams">
+          <div>
+            <div
+              v-if="Array.isArray(teams) && teams.length > 0"
+              class="workspace-list"
+            >
+              <div v-for="team in teams" :key="team.id" class="team-item">
+                <n-button
+                  text
+                  block
+                  @click="handleTeamClick(team.id)"
+                  :class="{
+                    'team-selected': teamStore.selectedTeam === team.id,
+                  }"
+                >
+                  <template #icon>
+                    <n-icon size="18" class="team-icon">
+                      <Icon icon="material-symbols:group-rounded" />
+                    </n-icon>
+                  </template>
+                  {{ team.name }}
+                  <div class="team-meta">
+                    <div class="member-avatars">
+                      <n-avatar-group
+                        :size="24"
+                        :max="3"
+                        :options="
+                          team.members.map((member) => ({
+                            src: member.avatar,
+                            text: member.username.charAt(0).toUpperCase(),
+                          }))
+                        "
+                      />
+                    </div>
+                    <div
+                      class="team-status"
+                      :class="
+                        team.status === 'active'
+                          ? 'status-active'
+                          : 'status-busy'
+                      "
+                    ></div>
+                  </div>
+                </n-button>
+                <n-dropdown
+                  trigger="click"
+                  :options="teamOptions"
+                  placement="bottom-end"
+                  @select="(key) => handleTeamAction(key, team)"
+                >
+                  <n-button
+                    quaternary
+                    size="small"
+                    class="team-actions"
+                    :class="{
+                      'team-actions-selected':
+                        teamStore.selectedTeam === team.id,
+                    }"
+                    @click.stop
+                  >
+                    <n-icon size="16">
+                      <EllipsisVertical />
+                    </n-icon>
+                  </n-button>
+                </n-dropdown>
+              </div>
+            </div>
+            <n-empty v-else description="No teams found" />
+          </div>
+        </n-spin>
+      </n-collapse-item>
+    </n-collapse>
+    <n-collapse>
       <n-collapse-item name="1">
         <template #header>
           <div class="collapse-header">
-            <span>Workspace</span>
-            <n-button quaternary size="small" @click.stop="handleAddWorkspace">
+            <div class="header-content">
+              <n-icon size="18" class="section-icon">
+                <Icon icon="material-symbols:space-dashboard-rounded" />
+              </n-icon>
+              <span>Workspace</span>
+            </div>
+            <n-button
+              quaternary
+              size="small"
+              @click.stop="handleAddWorkspace"
+              class="add-button"
+            >
               <n-icon size="16">
                 <Add />
               </n-icon>
@@ -57,7 +194,6 @@
         </template>
         <n-spin :show="isLoading">
           <div>
-            <!-- Workspace list -->
             <div
               v-if="Array.isArray(workspaces) && workspaces.length > 0"
               class="workspace-list"
@@ -78,10 +214,13 @@
                 >
                   <template #icon>
                     <n-icon size="18" class="workspace-icon">
-                      <Icon icon="fluent-color:planet-16" />
+                      <Icon icon="material-symbols:space-dashboard-rounded" />
                     </n-icon>
                   </template>
                   {{ workspace.name }}
+                  <div class="workspace-meta">
+                    <div class="workspace-indicator"></div>
+                  </div>
                 </n-button>
               </div>
             </div>
@@ -123,8 +262,18 @@
       <n-collapse-item name="1">
         <template #header>
           <div class="collapse-header">
-            <span>Pages</span>
-            <n-button quaternary size="small" @click.stop="handleAddPages">
+            <div class="header-content">
+              <n-icon size="18" class="section-icon">
+                <Icon icon="material-symbols:description-rounded" />
+              </n-icon>
+              <span>Pages</span>
+            </div>
+            <n-button
+              quaternary
+              size="small"
+              @click.stop="handleAddPages"
+              class="add-button"
+            >
               <n-icon size="16">
                 <Add />
               </n-icon>
@@ -138,45 +287,26 @@
               class="workspace-list"
             >
               <div v-for="page in pages" :key="page.id" class="page-item">
-                <div class="page-content">
-                  <n-button
-                    text
-                    block
-                    @click="handlePageClick(page.id)"
-                    :class="{
-                      'page-selected': pageStore.selectedPage === page.id,
-                    }"
-                  >
-                    <template #icon>
-                      <n-icon size="19" class="page-icon">
-                        <Icon icon="material-icon-theme:document" />
-                      </n-icon>
-                    </template>
-                    {{ page.title }}
-                  </n-button>
-                </div>
+                <n-button
+                  text
+                  block
+                  @click="handlePageClick(page.id)"
+                  :class="{
+                    'page-selected': pageStore.selectedPage === page.id,
+                  }"
+                >
+                  <template #icon>
+                    <n-icon size="18" class="page-icon">
+                      <Icon icon="material-symbols:description-rounded" />
+                    </n-icon>
+                  </template>
+                  <span class="page-title">{{ page.title || "Untitled" }}</span>
+                </n-button>
                 <n-dropdown
                   trigger="click"
-                  :options="[
-                    {
-                      label: 'Cập nhật tiêu đề',
-                      key: 'update',
-                      props: {
-                        onClick: () => {
-                          console.log('Update clicked for page:', page);
-                          handleUpdatePageTitle(page);
-                        },
-                      },
-                    },
-                    {
-                      label: 'Xóa trang',
-                      key: 'delete',
-                      props: {
-                        onClick: () => handleDeletePage(page.id),
-                      },
-                    },
-                  ]"
+                  :options="pageOptions"
                   placement="bottom-end"
+                  @select="(key) => handlePageAction(key, page)"
                 >
                   <n-button
                     quaternary
@@ -195,17 +325,52 @@
                 </n-dropdown>
               </div>
             </div>
+            <n-empty v-else description="No pages found" />
           </div>
         </n-spin>
       </n-collapse-item>
     </n-collapse>
   </div>
   <div class="nailed-section">
-    <n-button quaternary block>
-      <n-icon size="24" style="margin-right: 16px; margin-left: 0px">
-        <PersonAdd />
-      </n-icon>
-      <span>Mời thành viên</span>
+    <n-button quaternary block class="utility-button invite-button">
+      <template #icon>
+        <n-icon size="20">
+          <Icon icon="material-symbols:person-add-rounded" />
+        </n-icon>
+      </template>
+      Invite Members
+      <div class="invite-indicator pulse"></div>
+    </n-button>
+
+    <n-button
+      quaternary
+      block
+      class="utility-button"
+      @click="showTrashModal = true"
+    >
+      <div class="utility-content">
+        <n-icon size="18">
+          <Icon icon="material-symbols:delete-rounded" />
+        </n-icon>
+        <span>Trash</span>
+      </div>
+      <div v-if="trashedPages.length > 0" class="utility-badge">
+        {{ trashedPages.length }}
+      </div>
+    </n-button>
+
+    <n-button
+      quaternary
+      block
+      class="utility-button"
+      @click="showSettingsModal = true"
+    >
+      <div class="utility-content">
+        <n-icon size="18">
+          <Icon icon="material-symbols:settings-rounded" />
+        </n-icon>
+        <span>Settings</span>
+      </div>
     </n-button>
   </div>
 
@@ -272,9 +437,199 @@
       </n-form-item>
     </n-form>
   </n-modal>
+
+  <!-- Team Management Modals -->
+  <n-modal
+    v-model:show="showTeamModal"
+    title="Create Team"
+    preset="dialog"
+    positive-text="Create"
+    negative-text="Cancel"
+    @positive-click="handleSaveTeam"
+    @negative-click="showTeamModal = false"
+  >
+    <n-form ref="teamFormRef" :model="teamForm" :rules="teamFormRules">
+      <n-form-item label="Team Name" path="name">
+        <n-input v-model:value="teamForm.name" placeholder="Enter team name" />
+      </n-form-item>
+      <n-form-item label="Description" path="description">
+        <n-input
+          v-model:value="teamForm.description"
+          type="textarea"
+          placeholder="Enter team description"
+        />
+      </n-form-item>
+    </n-form>
+  </n-modal>
+
+  <n-modal
+    v-model:show="showMemberModal"
+    title="Manage Team Members"
+    preset="dialog"
+    style="max-width: 600px"
+  >
+    <div class="member-management">
+      <div class="member-list">
+        <div v-for="member in teamMembers" :key="member.id" class="member-item">
+          <div class="member-info">
+            <n-avatar
+              size="small"
+              :src="member.avatar"
+              :fallback-src="member.avatar"
+            >
+              {{ member.username.charAt(0).toUpperCase() }}
+            </n-avatar>
+            <span class="member-name">{{ member.username }}</span>
+            <n-tag
+              size="small"
+              :type="member.role === 'admin' ? 'success' : 'default'"
+            >
+              {{ member.role }}
+            </n-tag>
+          </div>
+          <n-button
+            quaternary
+            size="small"
+            @click="handleRemoveMember(member)"
+            v-if="member.role !== 'admin'"
+          >
+            <n-icon size="16">
+              <Icon icon="material-symbols:person-remove" />
+            </n-icon>
+          </n-button>
+        </div>
+      </div>
+      <div class="add-member-section">
+        <n-input-group>
+          <n-input
+            v-model:value="newMemberEmail"
+            placeholder="Enter email address"
+          />
+          <n-button type="primary" @click="handleInviteMember">
+            Invite
+          </n-button>
+        </n-input-group>
+      </div>
+    </div>
+  </n-modal>
+
+  <n-modal
+    v-model:show="showTeamSettingsModal"
+    title="Team Settings"
+    preset="dialog"
+    positive-text="Save"
+    negative-text="Cancel"
+    @positive-click="handleSaveTeamSettings"
+    @negative-click="showTeamSettingsModal = false"
+  >
+    <n-form
+      ref="teamSettingsFormRef"
+      :model="teamSettingsForm"
+      :rules="teamSettingsRules"
+    >
+      <n-form-item label="Team Name" path="name">
+        <n-input
+          v-model:value="teamSettingsForm.name"
+          placeholder="Enter team name"
+        />
+      </n-form-item>
+      <n-form-item label="Description" path="description">
+        <n-input
+          v-model:value="teamSettingsForm.description"
+          type="textarea"
+          placeholder="Enter team description"
+        />
+      </n-form-item>
+      <n-form-item label="Team Visibility" path="visibility">
+        <n-select
+          v-model:value="teamSettingsForm.visibility"
+          :options="[
+            { label: 'Private', value: 'private' },
+            { label: 'Public', value: 'public' },
+          ]"
+        />
+      </n-form-item>
+    </n-form>
+  </n-modal>
+
+  <n-modal
+    v-model:show="showDeleteTeamModal"
+    title="Delete Team"
+    preset="dialog"
+    positive-text="Delete"
+    negative-text="Cancel"
+    @positive-click="handleConfirmDeleteTeam"
+    @negative-click="showDeleteTeamModal = false"
+  >
+    <p>
+      Are you sure you want to delete this team? This action cannot be undone.
+    </p>
+  </n-modal>
+
+  <!-- Add Trash Modal -->
+  <n-modal
+    v-model:show="showTrashModal"
+    title="Trash"
+    preset="card"
+    style="max-width: 480px"
+    :bordered="false"
+  >
+    <div class="trash-management">
+      <div class="trash-search">
+        <n-input
+          v-model:value="trashSearchQuery"
+          placeholder="Search pages in Trash"
+          clearable
+        >
+          <template #prefix>
+            <n-icon size="18">
+              <Icon icon="material-symbols:search-rounded" />
+            </n-icon>
+          </template>
+        </n-input>
+      </div>
+      <div v-if="filteredTrashPages.length > 0" class="trash-list">
+        <div
+          v-for="page in filteredTrashPages"
+          :key="page.id"
+          class="trash-item"
+        >
+          <div class="trash-info">
+            <n-icon size="18" class="trash-icon">
+              <Icon icon="material-symbols:description-rounded" />
+            </n-icon>
+            <span class="trash-title">{{ page.title || "Untitled" }}</span>
+          </div>
+          <div class="trash-actions">
+            <n-button
+              quaternary
+              circle
+              size="small"
+              @click="restoreFromTrash(page)"
+            >
+              <n-icon size="16">
+                <Icon icon="material-symbols:restore-rounded" />
+              </n-icon>
+            </n-button>
+            <n-button
+              quaternary
+              circle
+              size="small"
+              @click="deleteFromTrash(page)"
+            >
+              <n-icon size="16">
+                <Icon icon="material-symbols:delete-forever-rounded" />
+              </n-icon>
+            </n-button>
+          </div>
+        </div>
+      </div>
+      <n-empty v-else description="No items in trash" />
+    </div>
+  </n-modal>
 </template>
 <script>
-import { defineComponent, ref, onMounted, computed, watch } from "vue";
+import { defineComponent, ref, onMounted, computed, watch, h } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import {
   MailUnread,
@@ -295,6 +650,8 @@ import { useUserStore } from "../../store/user";
 import Cookies from "js-cookie";
 import { Icon } from "@iconify/vue";
 import { useRecentSelectionsStore } from "@/store/recentSelections";
+import { useTeamStore } from "../../store/team";
+
 export default defineComponent({
   name: "Sidebar",
   components: {
@@ -380,6 +737,40 @@ export default defineComponent({
         trigger: "blur",
       },
     };
+    const teams = ref([]);
+    const isLoadingTeams = ref(false);
+    const teamStore = useTeamStore();
+
+    const teamOptions = [
+      {
+        label: "Manage Members",
+        key: "manage-members",
+      },
+      {
+        label: "Team Settings",
+        key: "team-settings",
+      },
+      {
+        label: "Delete Team",
+        key: "delete-team",
+      },
+    ];
+
+    const pageOptions = [
+      {
+        label: "Rename",
+        key: "rename",
+      },
+      {
+        label: "Move to Trash",
+        key: "trash",
+      },
+      {
+        label: "Delete",
+        key: "delete",
+      },
+    ];
+
     const fetchUser = async () => {
       try {
         const response = await api.get("/user/info");
@@ -603,13 +994,37 @@ export default defineComponent({
       }
     };
 
+    const renderIcon = (icon) => {
+      return () => h(Icon, { icon });
+    };
+
+    const options = [
+      {
+        label: "Settings",
+        key: "settings",
+        icon: renderIcon("material-symbols:settings-rounded"),
+      },
+      {
+        type: "divider",
+        key: "divider",
+      },
+      {
+        label: "Log out",
+        key: "logout",
+        icon: renderIcon("material-symbols:logout-rounded"),
+      },
+    ];
+
+    const userEmail = ref(Cookies.get("email") || "");
+
     const handleOptionClick = async (key) => {
       if (key === "settings") {
         showSettingsModal.value = true;
         await fetchUser();
-      } else if (key === "brown's hotel, london") {
-        // Handle logout
+      } else if (key === "logout") {
         Cookies.remove("username");
+        Cookies.remove("email");
+        Cookies.remove("token"); // Remove any other auth-related cookies if they exist
         router.push("/login");
       }
     };
@@ -628,6 +1043,230 @@ export default defineComponent({
       }
     );
 
+    const fetchTeams = async () => {
+      try {
+        isLoadingTeams.value = true;
+        const response = await api.get("/team/list");
+        if (response && response.data) {
+          teams.value = Array.isArray(response.data)
+            ? response.data
+            : response.data.data;
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        teams.value = [];
+      } finally {
+        isLoadingTeams.value = false;
+      }
+    };
+
+    const handleAddTeam = () => {
+      showTeamModal.value = true;
+    };
+
+    const handleTeamClick = (teamId) => {
+      teamStore.setSelectedTeam(teamId);
+      fetchTeamPages(teamId);
+    };
+
+    const handleTeamAction = (key, team) => {
+      switch (key) {
+        case "manage-members":
+          showMemberModal.value = true;
+          selectedTeam.value = team;
+          break;
+        case "team-settings":
+          showTeamSettingsModal.value = true;
+          selectedTeam.value = team;
+          break;
+        case "delete-team":
+          showDeleteTeamModal.value = true;
+          selectedTeam.value = team;
+          break;
+      }
+    };
+
+    // Team Management State
+    const showTeamModal = ref(false);
+    const showMemberModal = ref(false);
+    const showTeamSettingsModal = ref(false);
+    const showDeleteTeamModal = ref(false);
+    const selectedTeam = ref(null);
+    const teamMembers = ref([]);
+    const newMemberEmail = ref("");
+
+    const teamForm = ref({
+      name: "",
+      description: "",
+    });
+
+    const teamFormRules = {
+      name: {
+        required: true,
+        message: "Please enter team name",
+        trigger: "blur",
+      },
+      description: {
+        required: true,
+        message: "Please enter team description",
+        trigger: "blur",
+      },
+    };
+
+    const teamSettingsForm = ref({
+      name: "",
+      description: "",
+      visibility: "private",
+    });
+
+    const teamSettingsRules = {
+      name: {
+        required: true,
+        message: "Please enter team name",
+        trigger: "blur",
+      },
+    };
+
+    const handleSaveTeam = async () => {
+      try {
+        await teamFormRef.value?.validate();
+        const response = await api.post("/team/create", teamForm.value);
+        if (response.data) {
+          teamStore.addTeam(response.data);
+          showTeamModal.value = false;
+          teamForm.value = { name: "", description: "" };
+        }
+      } catch (error) {
+        console.error("Error creating team:", error);
+      }
+    };
+
+    const handleInviteMember = async () => {
+      if (!selectedTeam.value || !newMemberEmail.value) return;
+
+      try {
+        const response = await api.post(
+          `/team/${selectedTeam.value.id}/invite`,
+          {
+            email: newMemberEmail.value,
+          }
+        );
+        if (response.data) {
+          teamMembers.value.push(response.data);
+          newMemberEmail.value = "";
+        }
+      } catch (error) {
+        console.error("Error inviting member:", error);
+      }
+    };
+
+    const handleRemoveMember = async (member) => {
+      if (!selectedTeam.value) return;
+
+      try {
+        await api.delete(`/team/${selectedTeam.value.id}/member/${member.id}`);
+        teamMembers.value = teamMembers.value.filter((m) => m.id !== member.id);
+      } catch (error) {
+        console.error("Error removing member:", error);
+      }
+    };
+
+    const handleSaveTeamSettings = async () => {
+      if (!selectedTeam.value) return;
+
+      try {
+        await teamSettingsFormRef.value?.validate();
+        const response = await api.put(
+          `/team/${selectedTeam.value.id}`,
+          teamSettingsForm.value
+        );
+        if (response.data) {
+          teamStore.updateTeam(selectedTeam.value.id, response.data);
+          showTeamSettingsModal.value = false;
+        }
+      } catch (error) {
+        console.error("Error updating team settings:", error);
+      }
+    };
+
+    const handleConfirmDeleteTeam = async () => {
+      if (!selectedTeam.value) return;
+
+      try {
+        await api.delete(`/team/${selectedTeam.value.id}`);
+        teamStore.removeTeam(selectedTeam.value.id);
+        showDeleteTeamModal.value = false;
+        selectedTeam.value = null;
+      } catch (error) {
+        console.error("Error deleting team:", error);
+      }
+    };
+
+    const showTrashModal = ref(false);
+    const trashedPages = ref([]);
+
+    const moveToTrash = (page) => {
+      // Add to trash
+      trashedPages.value.push({
+        id: page.id,
+        title: page.title,
+        workspaceId: workspaceStore.selectedSpace,
+        trashedAt: new Date().toISOString(),
+      });
+
+      // Save to localStorage
+      localStorage.setItem("trashedPages", JSON.stringify(trashedPages.value));
+
+      // Remove from current pages list
+      pages.value = pages.value.filter((p) => p.id !== page.id);
+    };
+
+    const restoreFromTrash = async (page) => {
+      try {
+        // Remove from trash
+        trashedPages.value = trashedPages.value.filter((p) => p.id !== page.id);
+        localStorage.setItem(
+          "trashedPages",
+          JSON.stringify(trashedPages.value)
+        );
+
+        // Refresh pages list
+        await fetchPagesList();
+      } catch (error) {
+        console.error("Error restoring page:", error);
+      }
+    };
+
+    const deleteFromTrash = async (page) => {
+      try {
+        // Remove from trash
+        trashedPages.value = trashedPages.value.filter((p) => p.id !== page.id);
+        localStorage.setItem(
+          "trashedPages",
+          JSON.stringify(trashedPages.value)
+        );
+
+        // Delete from backend
+        await api.delete(`/page/${page.id}`);
+      } catch (error) {
+        console.error("Error deleting page:", error);
+      }
+    };
+
+    const handlePageAction = (key, page) => {
+      switch (key) {
+        case "rename":
+          handleUpdatePageTitle(page);
+          break;
+        case "trash":
+          moveToTrash(page);
+          break;
+        case "delete":
+          handleDeletePage(page.id);
+          break;
+      }
+    };
+
     // Initialize data
     onMounted(async () => {
       console.log("Sidebar component mounted");
@@ -637,7 +1276,22 @@ export default defineComponent({
         return;
       }
       await fetchWorkspaces();
+      await fetchTeams();
+      const storedTrash = localStorage.getItem("trashedPages");
+      if (storedTrash) {
+        trashedPages.value = JSON.parse(storedTrash);
+      }
     });
+
+    const trashSearchQuery = ref("");
+    const filteredTrashPages = computed(() => {
+      if (!trashSearchQuery.value) return trashedPages.value;
+      const query = trashSearchQuery.value.toLowerCase();
+      return trashedPages.value.filter((page) =>
+        page.title.toLowerCase().includes(query)
+      );
+    });
+
     return {
       showModalWorkspace,
       formRef,
@@ -656,22 +1310,8 @@ export default defineComponent({
       handleDeletePage,
       confirmDeletePage,
       handleHomeClick,
-      options: [
-        {
-          label: "Cài đặt",
-          key: "settings",
-          props: {
-            onClick: () => handleOptionClick("settings"),
-          },
-        },
-        {
-          label: "Đăng xuất",
-          key: "brown's hotel, london",
-          props: {
-            onClick: () => handleOptionClick("brown's hotel, london"),
-          },
-        },
-      ],
+      options,
+      handleOptionClick,
       workspaceStore,
       pageStore,
       userStore,
@@ -688,27 +1328,56 @@ export default defineComponent({
       settingsForm,
       settingsRules,
       handleSaveSettings,
-      handleOptionClick,
+      teams,
+      isLoadingTeams,
+      teamStore,
+      teamOptions,
+      handleAddTeam,
+      handleTeamClick,
+      handleTeamAction,
+      showTeamModal,
+      showMemberModal,
+      showTeamSettingsModal,
+      showDeleteTeamModal,
+      selectedTeam,
+      teamMembers,
+      newMemberEmail,
+      teamForm,
+      teamFormRules,
+      teamSettingsForm,
+      teamSettingsRules,
+      handleSaveTeam,
+      handleInviteMember,
+      handleRemoveMember,
+      handleSaveTeamSettings,
+      handleConfirmDeleteTeam,
+      pageOptions,
+      handlePageAction,
+      showTrashModal,
+      trashedPages,
+      moveToTrash,
+      restoreFromTrash,
+      deleteFromTrash,
+      trashSearchQuery,
+      filteredTrashPages,
+      userEmail,
     };
   },
 });
 </script>
 
 <style scoped>
-/* Add a root style to apply Inter font to all elements */
+/* Base styles */
 :deep(*) {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   font-weight: 400;
 }
 
-.inbox,
-.home,
+/* Account section */
 .account {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
 .account-wrapper {
@@ -716,70 +1385,118 @@ export default defineComponent({
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 8px;
+  border-radius: 8px;
   transition: background-color 0.2s ease;
 }
 
 .account-wrapper:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.avatar-container {
+  position: relative;
 }
 
 .account-info {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   flex: 1;
+  min-width: 0;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .username {
   font-size: 14px;
   font-weight: 500;
   color: var(--n-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.dropdown-icon {
+.user-email {
+  font-size: 12px;
   color: var(--n-text-color-3);
-  transition: transform 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.account-wrapper:hover .dropdown-icon {
-  transform: translateY(2px);
+:deep(.n-dropdown-menu) {
+  min-width: 200px !important;
 }
 
+:deep(.n-dropdown-option) {
+  padding: 8px 12px !important;
+}
+
+:deep(.n-dropdown-option-body) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:deep(.n-dropdown-option-body__prefix) {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.n-dropdown-divider) {
+  margin: 4px 0 !important;
+}
+
+/* Navigation sections */
+.home,
+.inbox {
+  padding: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.home .n-button,
+.inbox .n-button {
+  border-radius: 12px;
+  padding: 10px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid transparent;
+}
+
+.home .n-button:hover,
+.inbox .n-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateX(4px);
+  border-color: rgba(32, 128, 240, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Workspace and Pages sections */
 .workspace,
 .pages {
-  width: 100%;
+  padding: 8px 12px;
 }
 
-/* Add background color to the entire sidebar */
-:deep(.n-layout-sider) {
-  background-color: #f8f8f7;
-}
-
-/* Make buttons stretch full width */
-.n-button {
-  width: 100%;
-  justify-content: flex-start;
-}
-
-/* Make collapse stretch full width */
 :deep(.n-collapse) {
   width: 100%;
+  background: transparent;
+  border: none;
 }
 
-.account,
-.workspace,
-.pages {
-  padding: 8px;
+:deep(.n-collapse-item__header) {
+  padding: 10px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.5);
 }
-.nailed-section {
-  position: sticky;
-  bottom: 0;
-  width: 100%;
-  padding: 8px;
-  background-color: var(--n-color);
-  border-top: 1px solid var(--n-border-color);
+
+:deep(.n-collapse-item__header:hover) {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .collapse-header {
@@ -787,49 +1504,296 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-/* Make the add button more compact in the header */
 .collapse-header .n-button {
-  width: auto;
-  min-width: 0;
-  padding: 4px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  border-radius: 8px;
+  opacity: 0.7;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.collapse-header .n-button:hover {
+  opacity: 1;
+  background: rgba(32, 128, 240, 0.1);
+  color: #2080f0;
+  transform: rotate(90deg);
+}
+
+/* Workspace and Page items */
 .workspace-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding: 6px 4px;
 }
 
-.workspace-item {
-  width: 100%;
+.workspace-item,
+.page-item {
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .workspace-item .n-button,
 .page-item .n-button {
   text-align: left;
-  padding: 2px 8px;
-  color: inherit !important;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 .workspace-item .n-button:hover,
 .page-item .n-button:hover {
-  color: inherit !important;
-  background-color: rgba(0, 0, 0, 0.1) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.8)
+  ) !important;
+  transform: translateX(4px);
 }
 
-.workspace-selected,
-.page-selected {
-  background-color: rgba(0, 0, 0, 0.2) !important;
-  color: inherit !important;
+.workspace-item .n-button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #2080f0, #00e676);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 3px;
+}
+
+.workspace-item .n-button:hover::before {
+  opacity: 0.5;
+}
+
+.workspace-selected::before {
+  opacity: 1 !important;
+}
+
+.workspace-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 2px 8px;
+}
+
+.page-item .n-button {
+  text-align: left;
+  padding: 6px 8px;
+  height: 32px;
+  font-size: 13px;
+}
+
+.page-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 24px;
+}
+
+.page-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.page-actions {
+  opacity: 0;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin-right: 4px;
+  border-radius: 8px !important;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid transparent;
+}
+
+.page-actions-selected,
+.page-item:hover .page-actions {
+  opacity: 0.9;
+}
+
+.page-actions:hover {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(32, 128, 240, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-50%) scale(1.05);
 }
 
 .page-icon,
 .workspace-icon {
-  margin-right: 8px;
+  margin-right: 10px;
+  opacity: 0.8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.page-item {
+
+.workspace-selected .workspace-icon,
+.page-selected .page-icon {
+  opacity: 1;
+  color: #2080f0;
+}
+
+/* Bottom section */
+.nailed-section {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.9)
+  );
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.utility-button {
+  border-radius: 12px;
+  padding: 10px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  text-align: left;
+}
+
+.utility-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.utility-button:hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+  transform: translateX(4px);
+  border-color: rgba(32, 128, 240, 0.2);
+  box-shadow: 0 4px 12px rgba(32, 128, 240, 0.1);
+}
+
+.invite-button {
+  background: linear-gradient(
+    135deg,
+    rgba(32, 128, 240, 0.1),
+    rgba(0, 230, 118, 0.1)
+  ) !important;
+  border: 1px solid rgba(32, 128, 240, 0.2);
+}
+
+.utility-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ff4081;
+  color: white;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Modals */
+:deep(.n-modal) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.98)
+  ) !important;
+  backdrop-filter: blur(12px);
+}
+
+:deep(.n-modal-header) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 20px 24px;
+}
+
+:deep(.n-modal-content) {
+  padding: 24px;
+}
+
+:deep(.n-input) {
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.n-input:hover) {
+  border-color: rgba(32, 128, 240, 0.3);
+}
+
+:deep(.n-input:focus) {
+  border-color: #2080f0;
+  box-shadow: 0 0 0 2px rgba(32, 128, 240, 0.2);
+}
+
+/* New styles for enhanced visuals */
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-icon {
+  color: #2080f0;
+  opacity: 0.8;
+}
+
+/* Team styles */
+.team-icon {
+  color: #7c4dff;
+  opacity: 0.8;
+}
+
+.team-item {
   position: relative;
   display: flex;
   align-items: center;
@@ -837,50 +1801,255 @@ export default defineComponent({
   width: 100%;
 }
 
-.page-content {
-  flex: 1;
-  min-width: 0; /* This prevents flex item from growing beyond container */
+.team-selected {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 77, 255, 0.15),
+    rgba(124, 77, 255, 0.1)
+  ) !important;
 }
 
-.page-content .n-button {
-  width: 100%;
-  text-align: left;
-  padding: 4px 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.team-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.page-actions {
+.member-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.team-actions {
   opacity: 0;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  margin-left: 0px;
-  border-radius: 0 !important;
-  background-color: transparent !important;
+  margin-right: 4px;
+  border-radius: 8px !important;
   position: absolute;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid transparent;
 }
 
-.page-actions-selected {
+.team-actions-selected,
+.team-item:hover .team-actions {
+  opacity: 0.9;
+}
+
+.team-actions:hover {
   opacity: 1 !important;
-  background-color: transparent !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(124, 77, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-50%) scale(1.05);
 }
 
-.page-item:hover .page-actions {
+/* Member management styles */
+.member-management {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.member-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateX(4px);
+  border-color: rgba(124, 77, 255, 0.2);
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-name {
+  font-weight: 500;
+  color: var(--n-text-color);
+}
+
+.add-member-section {
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+:deep(.n-input-group) {
+  display: flex;
+  gap: 8px;
+}
+
+:deep(.n-input-group .n-input) {
+  flex: 1;
+}
+
+:deep(.n-tag) {
+  text-transform: capitalize;
+}
+
+/* Navigation Buttons */
+.nav-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-button.primary {
+  background: linear-gradient(
+    135deg,
+    rgba(32, 128, 240, 0.1),
+    rgba(32, 128, 240, 0.05)
+  ) !important;
+}
+
+.nav-button.secondary {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 230, 118, 0.1),
+    rgba(0, 230, 118, 0.05)
+  ) !important;
+}
+
+.inbox-counter {
+  background: rgba(255, 64, 129, 0.1);
+  color: #ff4081;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.invite-indicator {
+  position: absolute;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00e676;
+}
+
+.invite-indicator.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 230, 118, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+  }
+}
+
+/* Trash Management Styles */
+.trash-management {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trash-search {
+  padding: 0 0 8px 0;
+}
+
+.trash-search :deep(.n-input) {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.trash-search :deep(.n-input:hover),
+.trash-search :deep(.n-input:focus) {
+  border-color: #2080f0;
+  background: white;
+}
+
+.trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0 4px;
+}
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: transparent;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.trash-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.trash-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--n-text-color);
+}
+
+.trash-title {
+  font-size: 14px;
+}
+
+.trash-icon {
+  opacity: 0.6;
+}
+
+.trash-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.trash-item:hover .trash-actions {
   opacity: 1;
-  background-color: transparent !important;
 }
 
-.page-item:hover .page-actions:hover {
-  background-color: transparent !important;
+.trash-actions .n-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--n-text-color-3);
 }
 
-.page-icon {
-  margin-right: 8px;
+.trash-actions .n-button:hover {
+  color: #2080f0;
+  background: rgba(32, 128, 240, 0.1);
 }
 </style>

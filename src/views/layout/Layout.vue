@@ -3,17 +3,17 @@
     <n-layout has-sider>
       <n-layout-sider
         collapse-mode="width"
-        :collapsed-width="120"
+        :collapsed-width="100"
         :width="240"
         :show-collapsed-content="false"
         show-trigger="arrow-circle"
-        content-style="padding: 24px;"
+        content-style="padding: 16px;"
         bordered
       >
         <Sidebar></Sidebar>
       </n-layout-sider>
       <n-layout-content
-        content-style="padding: 24px; flex: 1; width: 100%; height: 100%;"
+        content-style="padding: 12px; flex: 1; width: 100%; height: 100%;"
       >
         <div style="height: 100%">
           <router-view style="height: 100%; width: 100%" />

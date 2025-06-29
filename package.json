@@ -23,6 +23,7 @@
     "editorjs-html": "^4.0.5",
     "editorjs-underline": "^0.0.4",
     "hashids": "^2.3.0",
+    "html2pdf.js": "^0.10.3",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "naive-ui": "^2.41.0",
