@@ -45,6 +45,18 @@
           <i class="fas fa-share-alt"></i>
           Share
         </button>
+        <button class="export-button" @click="handleExport">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+          </svg>
+          Export PDF
+        </button>
       </div>
     </div>
     <div class="editor-wrapper">
@@ -88,10 +100,13 @@ import { usePageStore } from "../../store/page";
 import { debounce } from "lodash";
 import { useHashids } from "../../utils/useHashids";
 import { useFavoritesStore } from "@/store/favorites";
+import EditorJsToHtml from "editorjs-html";
+import html2pdf from "html2pdf.js";
 
 export default {
   components: { Editor },
   data() {
+    const edjsParser = EditorJsToHtml();
     return {
       isApiLoading: false,
       apiStatus: "Ready",
@@ -102,6 +117,7 @@ export default {
       shareModalVisible: false,
       shareRole: "viewer",
       favoritesStore: useFavoritesStore(),
+      edjsParser,
     };
   },
   setup() {
@@ -166,6 +182,7 @@ export default {
     handleShare() {
       this.shareModalVisible = true;
     },
+
     updateApiStatus(status) {
       this.isApiLoading = status === "loading";
       this.apiStatus = status;
@@ -189,6 +206,92 @@ export default {
           id: this.pageStore.selectedPage,
           title: this.pageStore.selectedTitle,
         });
+      }
+    },
+    async handleExport() {
+      try {
+        // Convert Editor.js content to HTML
+        const content = this.pageStore.currentContent;
+        if (!content || !content.blocks || !Array.isArray(content.blocks)) {
+          console.error("Invalid content structure:", content);
+          throw new Error("No valid content to export");
+        }
+
+        // Parse blocks to HTML
+        let htmlContent = "";
+        try {
+          // Convert each block individually to handle potential parsing errors
+          const htmlParts = content.blocks.map((block) => {
+            try {
+              // Handle different block types
+              switch (block.type) {
+                case "paragraph":
+                  return `<p>${block.data.text || ""}</p>`;
+                case "header":
+                  const level = block.data.level || 2;
+                  return `<h${level}>${block.data.text || ""}</h${level}>`;
+                case "list":
+                  const listType = block.data.style === "ordered" ? "ol" : "ul";
+                  const items = block.data.items || [];
+                  return `<${listType}>${items
+                    .map((item) => `<li>${item}</li>`)
+                    .join("")}</${listType}>`;
+                case "image":
+                  return `<figure>
+                    <img src="${block.data.url || ""}" alt="${
+                    block.data.caption || ""
+                  }" />
+                    ${
+                      block.data.caption
+                        ? `<figcaption>${block.data.caption}</figcaption>`
+                        : ""
+                    }
+                  </figure>`;
+                default:
+                  return ""; // Skip unknown block types
+              }
+            } catch (blockError) {
+              console.warn("Error parsing block:", block, blockError);
+              return ""; // Skip problematic blocks
+            }
+          });
+
+          htmlContent = htmlParts.join("\n");
+        } catch (parseError) {
+          console.error("Error parsing blocks:", parseError);
+          throw new Error("Failed to parse content");
+        }
+
+        // Create a temporary div to hold the content
+        const container = document.createElement("div");
+        container.className = "pdf-container";
+        container.innerHTML = `
+          <h1>${this.pageStore.selectedTitle || "Untitled"}</h1>
+          ${htmlContent}
+        `;
+
+        // Add some basic styling
+        container.style.padding = "20px";
+        container.style.fontFamily = "Arial, sans-serif";
+        container.style.lineHeight = "1.6";
+
+        // Configure html2pdf options
+        const opt = {
+          margin: 1,
+          filename: `${this.pageStore.selectedTitle || "document"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+        };
+
+        // Generate PDF
+        await html2pdf().set(opt).from(container).save();
+
+        // Update status
+        this.updateApiStatus("PDF exported");
+      } catch (error) {
+        console.error("Error exporting PDF:", error);
+        this.updateApiStatus("Export failed");
       }
     },
   },
@@ -548,5 +651,70 @@ export default {
 .favorite-button:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.3);
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #34d399, #059669);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.2);
+}
+
+.export-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(52, 211, 153, 0.3);
+  background: linear-gradient(135deg, #10b981, #047857);
+}
+
+.export-button:active {
+  transform: translateY(0);
+}
+
+.pdf-container h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+.pdf-container {
+  font-size: 14px;
+  color: #333;
+}
+
+.pdf-container img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+}
+
+.pdf-container ul,
+.pdf-container ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.pdf-container p {
+  margin: 10px 0;
+}
+
+.pdf-container h2 {
+  font-size: 20px;
+  margin: 15px 0;
+  color: #2d3748;
+}
+
+.pdf-container h3 {
+  font-size: 18px;
+  margin: 12px 0;
+  color: #2d3748;
 }
 </style>

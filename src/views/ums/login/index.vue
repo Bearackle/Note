@@ -78,6 +78,7 @@ export default {
         this.$router.push("/note");
         this.userStore.setUser(this.username);
         const userInfo = await api.get("/user/info");
+        this.Cookies.set("userId", userInfo.data.data.id, { expires: 7 });
         this.Cookies.set("username", this.username, { expires: 7 });
         this.Cookies.set("email", userInfo.data.data.email, { expires: 7 });
       } else {

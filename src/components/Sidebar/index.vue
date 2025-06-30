@@ -65,15 +65,66 @@
     </n-button>
   </div>
   <div class="inbox">
-    <n-button quaternary class="nav-button secondary">
+    <n-button
+      quaternary
+      class="nav-button secondary"
+      @click="showInboxModal = true"
+    >
       <template #icon>
         <n-icon size="20">
           <Icon icon="material-symbols:inbox-rounded" />
         </n-icon>
       </template>
       Inbox
-      <div class="inbox-counter">5</div>
+      <div class="inbox-counter" v-if="inboxCounter > 0">
+        {{ inboxCounter }}
+      </div>
     </n-button>
+
+    <!-- Inbox Modal -->
+    <n-modal
+      v-model:show="showInboxModal"
+      title="Inbox Messages"
+      preset="card"
+      style="max-width: 600px"
+      :bordered="false"
+    >
+      <div class="inbox-management">
+        <div v-if="inboxMessages.length > 0" class="inbox-list">
+          <div
+            v-for="message in inboxMessages"
+            :key="message.id"
+            class="inbox-item"
+          >
+            <div class="inbox-info">
+              <n-icon size="20" class="inbox-icon">
+                <Icon icon="material-symbols:person-add" />
+              </n-icon>
+              <span class="inbox-message">
+                {{ message.inviterId }} invited you to {{ message.objectType }}
+              </span>
+            </div>
+            <div class="inbox-actions">
+              <n-button
+                type="success"
+                size="small"
+                @click="handleInvitationResponse(message.id, 'accept')"
+              >
+                Accept
+              </n-button>
+              <n-button
+                type="error"
+                size="small"
+                @click="handleInvitationResponse(message.id, 'reject')"
+              >
+                Reject
+              </n-button>
+            </div>
+          </div>
+        </div>
+        <n-empty v-else description="No pending invitations" />
+      </div>
+    </n-modal>
   </div>
   <div class="workspace">
     <n-collapse>
@@ -104,13 +155,18 @@
               v-if="Array.isArray(teams) && teams.length > 0"
               class="workspace-list"
             >
-              <div v-for="team in teams" :key="team.id" class="team-item">
+              <div
+                v-for="team in teams"
+                :key="team.workspaceId"
+                class="team-item"
+              >
                 <n-button
                   text
                   block
-                  @click="handleTeamClick(team.id)"
+                  @click="handleWorkspaceClick(team.workspaceId)"
                   :class="{
-                    'team-selected': teamStore.selectedTeam === team.id,
+                    'team-selected':
+                      teamStore.selectedTeam === team.workspaceId,
                   }"
                 >
                   <template #icon>
@@ -118,33 +174,11 @@
                       <Icon icon="material-symbols:group-rounded" />
                     </n-icon>
                   </template>
-                  {{ team.name }}
-                  <div class="team-meta">
-                    <div class="member-avatars">
-                      <n-avatar-group
-                        :size="24"
-                        :max="3"
-                        :options="
-                          team.members.map((member) => ({
-                            src: member.avatar,
-                            text: member.username.charAt(0).toUpperCase(),
-                          }))
-                        "
-                      />
-                    </div>
-                    <div
-                      class="team-status"
-                      :class="
-                        team.status === 'active'
-                          ? 'status-active'
-                          : 'status-busy'
-                      "
-                    ></div>
-                  </div>
+                  {{ team.workspaceName }}
                 </n-button>
                 <n-dropdown
                   trigger="click"
-                  :options="teamOptions"
+                  :options="teamActionOptions"
                   placement="bottom-end"
                   @select="(key) => handleTeamAction(key, team)"
                 >
@@ -332,7 +366,12 @@
     </n-collapse>
   </div>
   <div class="nailed-section">
-    <n-button quaternary block class="utility-button invite-button">
+    <n-button
+      quaternary
+      block
+      class="utility-button invite-button"
+      @click="showInviteMemberModal = true"
+    >
       <template #icon>
         <n-icon size="20">
           <Icon icon="material-symbols:person-add-rounded" />
@@ -627,9 +666,49 @@
       <n-empty v-else description="No items in trash" />
     </div>
   </n-modal>
+
+  <!-- Add Invite Member Modal -->
+  <n-modal
+    v-model:show="showInviteMemberModal"
+    title="Invite Member"
+    preset="dialog"
+    positive-text="Invite"
+    negative-text="Cancel"
+    @positive-click="handleInviteMemberSubmit"
+    @negative-click="showInviteMemberModal = false"
+  >
+    <n-form
+      ref="inviteMemberFormRef"
+      :model="inviteMemberForm"
+      :rules="inviteMemberRules"
+    >
+      <n-form-item label="Email" path="email">
+        <n-input
+          v-model:value="inviteMemberForm.email"
+          placeholder="Enter email address"
+        />
+      </n-form-item>
+      <n-form-item label="Team" path="teamId">
+        <n-select
+          v-model:value="inviteMemberForm.teamId"
+          :options="teamOptions"
+          placeholder="Select team"
+          :loading="isLoadingTeams"
+        />
+      </n-form-item>
+    </n-form>
+  </n-modal>
 </template>
 <script>
-import { defineComponent, ref, onMounted, computed, watch, h } from "vue";
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  computed,
+  watch,
+  h,
+  onBeforeUnmount,
+} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import {
   MailUnread,
@@ -651,6 +730,7 @@ import Cookies from "js-cookie";
 import { Icon } from "@iconify/vue";
 import { useRecentSelectionsStore } from "@/store/recentSelections";
 import { useTeamStore } from "../../store/team";
+import webSocketService from "../../utils/websocket";
 
 export default defineComponent({
   name: "Sidebar",
@@ -741,7 +821,14 @@ export default defineComponent({
     const isLoadingTeams = ref(false);
     const teamStore = useTeamStore();
 
-    const teamOptions = [
+    const teamOptions = computed(() => {
+      return teams.value.map((team) => ({
+        label: team.workspaceName,
+        value: team.workspaceId,
+      }));
+    });
+
+    const teamActionOptions = [
       {
         label: "Manage Members",
         key: "manage-members",
@@ -755,6 +842,23 @@ export default defineComponent({
         key: "delete-team",
       },
     ];
+
+    const handleTeamAction = (key, team) => {
+      switch (key) {
+        case "manage-members":
+          showMemberModal.value = true;
+          selectedTeam.value = team;
+          break;
+        case "team-settings":
+          showTeamSettingsModal.value = true;
+          selectedTeam.value = team;
+          break;
+        case "delete-team":
+          showDeleteTeamModal.value = true;
+          selectedTeam.value = team;
+          break;
+      }
+    };
 
     const pageOptions = [
       {
@@ -1016,6 +1120,9 @@ export default defineComponent({
     ];
 
     const userEmail = ref(Cookies.get("email") || "");
+    const inboxCounter = ref(0);
+    const showInboxModal = ref(false);
+    const inboxMessages = ref([]);
 
     const handleOptionClick = async (key) => {
       if (key === "settings") {
@@ -1046,14 +1153,14 @@ export default defineComponent({
     const fetchTeams = async () => {
       try {
         isLoadingTeams.value = true;
-        const response = await api.get("/team/list");
+        const response = await api.get("/workspace/teamspace");
         if (response && response.data) {
           teams.value = Array.isArray(response.data)
             ? response.data
             : response.data.data;
         }
       } catch (error) {
-        console.error("Error fetching teams:", error);
+        console.error("Error fetching teamspace:", error);
         teams.value = [];
       } finally {
         isLoadingTeams.value = false;
@@ -1064,28 +1171,45 @@ export default defineComponent({
       showTeamModal.value = true;
     };
 
-    const handleTeamClick = (teamId) => {
-      teamStore.setSelectedTeam(teamId);
-      fetchTeamPages(teamId);
+    const handleTeamClick = (workspaceId) => {
+      workspaceStore.setSelectedSpace(workspaceId);
+      fetchPagesList();
     };
-
-    const handleTeamAction = (key, team) => {
-      switch (key) {
-        case "manage-members":
-          showMemberModal.value = true;
-          selectedTeam.value = team;
-          break;
-        case "team-settings":
-          showTeamSettingsModal.value = true;
-          selectedTeam.value = team;
-          break;
-        case "delete-team":
-          showDeleteTeamModal.value = true;
-          selectedTeam.value = team;
-          break;
+    const fetchInboxMessage = async () => {
+      try {
+        const response = await api.get("/workspace/member/invitations");
+        inboxMessages.value = response.data.data;
+        inboxCounter.value = inboxMessages.value.filter(
+          (item) => item.status === "pending"
+        ).length;
+      } catch (error) {
+        console.error("Error fetching inbox messages:", error);
       }
     };
 
+    const handleInvitationResponse = async (invitationId, action) => {
+      try {
+        const response = await api.put(
+          `/workspace/member/invitations/${invitationId}`,
+          {
+            status: action === "accept" ? "accepted" : "rejected",
+          }
+        );
+
+        if (response.data.code === 200) {
+          // Remove the invitation from the list
+          inboxMessages.value = inboxMessages.value.filter(
+            (msg) => msg.id !== invitationId
+          );
+          // Update counter
+          inboxCounter.value = inboxMessages.value.filter(
+            (item) => item.status === "pending"
+          ).length;
+        }
+      } catch (error) {
+        console.error(`Error ${action}ing invitation:`, error);
+      }
+    };
     // Team Management State
     const showTeamModal = ref(false);
     const showMemberModal = ref(false);
@@ -1277,12 +1401,22 @@ export default defineComponent({
       }
       await fetchWorkspaces();
       await fetchTeams();
+      await fetchInboxMessage();
       const storedTrash = localStorage.getItem("trashedPages");
       if (storedTrash) {
         trashedPages.value = JSON.parse(storedTrash);
       }
+      webSocketService.connect();
+      // Subscribe to notifications
+      webSocketService.on("notification", (payload) => {
+        console.log("Received notification from server", payload);
+        // Refresh inbox messages when receiving a notification
+        fetchInboxMessage();
+      });
     });
-
+    onBeforeUnmount(() => {
+      webSocketService.disconnect();
+    });
     const trashSearchQuery = ref("");
     const filteredTrashPages = computed(() => {
       if (!trashSearchQuery.value) return trashedPages.value;
@@ -1291,6 +1425,47 @@ export default defineComponent({
         page.title.toLowerCase().includes(query)
       );
     });
+
+    const showInviteMemberModal = ref(false);
+    const inviteMemberFormRef = ref(null);
+    const inviteMemberForm = ref({
+      email: "",
+      teamId: null,
+    });
+    const inviteMemberRules = {
+      email: {
+        required: true,
+        message: "Please enter a valid email",
+        trigger: "blur",
+      },
+      teamId: {
+        required: true,
+        message: "Please select a team",
+        trigger: "change",
+      },
+    };
+
+    const handleInviteMemberSubmit = async () => {
+      try {
+        await inviteMemberFormRef.value?.validate();
+        const response = await api.post(
+          `/team/${inviteMemberForm.value.teamId}/invite`,
+          {
+            email: inviteMemberForm.value.email,
+          }
+        );
+        if (response.data) {
+          teamMembers.value.push(response.data);
+          inviteMemberForm.value = {
+            email: "",
+            teamId: null,
+          };
+          showInviteMemberModal.value = false;
+        }
+      } catch (error) {
+        console.error("Error inviting member:", error);
+      }
+    };
 
     return {
       showModalWorkspace,
@@ -1332,6 +1507,7 @@ export default defineComponent({
       isLoadingTeams,
       teamStore,
       teamOptions,
+      teamActionOptions,
       handleAddTeam,
       handleTeamClick,
       handleTeamAction,
@@ -1361,6 +1537,15 @@ export default defineComponent({
       trashSearchQuery,
       filteredTrashPages,
       userEmail,
+      showInviteMemberModal,
+      inviteMemberFormRef,
+      inviteMemberForm,
+      inviteMemberRules,
+      handleInviteMemberSubmit,
+      inboxCounter,
+      showInboxModal,
+      inboxMessages,
+      handleInvitationResponse,
     };
   },
 });
@@ -2051,5 +2236,64 @@ export default defineComponent({
 .trash-actions .n-button:hover {
   color: #2080f0;
   background: rgba(32, 128, 240, 0.1);
+}
+
+/* Inbox Modal Styles */
+.inbox-management {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.inbox-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.inbox-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateX(4px);
+  border-color: rgba(32, 128, 240, 0.2);
+}
+
+.inbox-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.inbox-message {
+  font-size: 14px;
+  color: var(--n-text-color);
+}
+
+.inbox-icon {
+  color: #2080f0;
+  opacity: 0.8;
+}
+
+.inbox-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.inbox-actions .n-button {
+  min-width: 80px;
 }
 </style>
