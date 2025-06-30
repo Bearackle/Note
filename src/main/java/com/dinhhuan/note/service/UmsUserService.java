@@ -22,4 +22,5 @@ public interface UmsUserService {
     UmsUserCacheService getCacheService();
     void logout(String username);
     UmsUser getCurrentUser();
+    UmsUser getUserByEmail(String email);
 }

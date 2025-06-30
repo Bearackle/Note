@@ -185,4 +185,16 @@ public class UmsUserServiceImpl implements UmsUserService {
         MemberUserDetails userDetails = (MemberUserDetails) authentication.getPrincipal();
         return userDetails.getUmsUser();
     }
+
+    @Override
+    public UmsUser getUserByEmail(String email) {
+        UmsUserExample example = new UmsUserExample();
+        UmsUserExample.Criteria criteria = example.createCriteria();
+        criteria.andEmailEqualTo(email);
+        List<UmsUser> users = umsUserMapper.selectByExample(example);
+        if(CollUtil.isEmpty(users)){
+            return null;
+        }
+        return users.get(0);
+    }
 }

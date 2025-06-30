@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dinhhuan.note.dao.NmsTeamspaceDao">
+    <resultMap id="Teamspace" type="com.dinhhuan.note.dto.TeamspaceParamDto">
+        <result column="id" jdbcType="BIGINT" property="workspaceId" />
+        <result column="name" jdbcType="VARCHAR" property="workspaceName" />
+        <result column="role" jdbcType="BIGINT" property="role" />
+        <result column="description" jdbcType="BIGINT" property="description" />
+    </resultMap>
+    <select id="getTeamspaceByUserId" resultMap="Teamspace">
+        select ws.id, ws.name, ws.description, wsm.role from nms_workspace ws
+         inner join
+         (select  b_wsm.workspace_id,b_wsm.role from nms_workspace_member b_wsm
+            where user_id = #{userId}
+            and (role = 'teamspace_owner' or role = 'teamspace_member')
+        ) wsm on ws.id = wsm.workspace_id
+    </select>
+</mapper>

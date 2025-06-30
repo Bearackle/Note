@@ -64,6 +64,8 @@ public class UmsUserController {
         UmsUser umsUser = userService.getUserByUsername(username);
         Map<String, Object> data = new HashMap<>();
         data.put("username", umsUser.getUsername());
+        data.put("email", umsUser.getEmail());
+        data.put("id", umsUser.getId());
         return CommonResult.success(data);
     }
 }

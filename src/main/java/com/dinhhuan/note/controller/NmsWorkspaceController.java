@@ -1,8 +1,10 @@
 package com.dinhhuan.note.controller;
 
 import com.dinhhuan.note.common.api.CommonResult;
+import com.dinhhuan.note.dto.TeamspaceParamDto;
 import com.dinhhuan.note.dto.WorkspaceParam;
 import com.dinhhuan.note.model.NmsWorkspace;
+import com.dinhhuan.note.service.NmsTeamspaceService;
 import com.dinhhuan.note.service.NmsWorkspaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,8 @@ import java.util.List;
 public class NmsWorkspaceController {
     @Autowired
     private NmsWorkspaceService nmsWorkspaceService;
+    @Autowired
+    private NmsTeamspaceService nmsTeamspaceService;
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
@@ -41,5 +45,23 @@ public class NmsWorkspaceController {
             return CommonResult.success(list);
         }
         return CommonResult.failed();
+    }
+    @RequestMapping(value = "/create-team", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> createTeamspace(@RequestBody WorkspaceParam param){
+       int count = this.nmsTeamspaceService.createTeamspace(param);
+       if(count > 0 ){
+           return CommonResult.success(count);
+       }
+       return CommonResult.failed();
+    }
+    @RequestMapping(value = "/teamspace", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<TeamspaceParamDto>> getTeamspace(){
+        List<TeamspaceParamDto> teamspaces = nmsTeamspaceService.listTeamspace();
+        if(teamspaces != null && !teamspaces.isEmpty()) {
+            return CommonResult.success(teamspaces);
+        } else
+            return CommonResult.failed();
     }
 }

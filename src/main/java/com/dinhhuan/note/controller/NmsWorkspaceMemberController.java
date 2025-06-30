@@ -1,8 +1,12 @@
 package com.dinhhuan.note.controller;
 
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import com.dinhhuan.note.common.api.CommonResult;
+import com.dinhhuan.note.dto.TeamspaceInvitationDto;
 import com.dinhhuan.note.dto.WorkspaceMemberParam;
 import com.dinhhuan.note.model.NmsWorkspaceMember;
+import com.dinhhuan.note.model.UmsInvitation;
 import com.dinhhuan.note.service.NmsWorkspaceMemberService;
 import com.dinhhuan.note.service.NmsWorkspaceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import java.util.List;
 public class NmsWorkspaceMemberController {
     @Autowired
     private NmsWorkspaceMemberService nmsWorkspaceMemberService;
+    private Log log = LogFactory.get();
     @RequestMapping(value = "", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult<Integer> createMember(@RequestBody WorkspaceMemberParam param) {
@@ -47,6 +52,25 @@ public class NmsWorkspaceMemberController {
         int count = nmsWorkspaceMemberService.updateMember(memberId, param);
         if(count > 0){
             return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/invitation", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> sendInvitation(@RequestBody TeamspaceInvitationDto param) {
+        log.info("param {}",param.getObjectId());
+        int count = nmsWorkspaceMemberService.saveAndSendInvitation(param);
+        if (count > 0){
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/invitations", method=RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<UmsInvitation>> listInvitations() {
+        List<UmsInvitation> allInvitations = nmsWorkspaceMemberService.listInvitations();
+        if(allInvitations != null && !allInvitations.isEmpty()){
+            return CommonResult.success(allInvitations);
         }
         return CommonResult.failed();
     }
