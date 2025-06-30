@@ -18,6 +18,13 @@ import Marker from "@editorjs/marker";
 import InlineCode from "@editorjs/inline-code";
 import api from "../api/axios";
 import ImageTool from "@editorjs/image";
+import Table from "@editorjs/table";
+import CodeTool from "@editorjs/code";
+import Warning from "@editorjs/warning";
+import AlignmentTuneTool from "editorjs-text-alignment-blocktune";
+import Quote from "@editorjs/quote";
+import Embed from "@editorjs/embed";
+import LinkTool from "@editorjs/link";
 export default {
   name: "Editor",
   props: {
@@ -35,11 +42,15 @@ export default {
         holder: "editorjs",
         autofocus: true,
         tools: {
-          header: Header,
+          header: {
+            class: Header,
+            tunes: ["alignment"],
+          },
           list: List,
           paragraph: {
             class: Paragraph,
             inlineToolbar: ["bold", "italic", "marker", "inlineCode"],
+            tunes: ["alignment"],
           },
           marker: Marker,
           inlineCode: InlineCode,
@@ -52,6 +63,54 @@ export default {
               field: "image",
               additionalRequestHeaders: {
                 Authorization: "Bearer " + localStorage.getItem("token"),
+              },
+            },
+            tunes: ["alignment"],
+          },
+          table: {
+            class: Table,
+            inlineToolbar: true,
+            config: {
+              rows: 2,
+              cols: 3,
+            },
+            tunes: ["alignment"],
+          },
+          code: {
+            class: CodeTool,
+            inlineToolbar: true,
+          },
+          warning: {
+            class: Warning,
+            inlineToolbar: true,
+            tunes: ["alignment"],
+          },
+          alignment: {
+            class: AlignmentTuneTool,
+            config: {
+              default: "left",
+              blocks: {
+                header: "center",
+                list: "left",
+              },
+            },
+          },
+          quote: {
+            class: Quote,
+            inlineToolbar: true,
+            config: {
+              quotePlaceholder: "Nhập nội dung trích dẫn",
+              captionPlaceholder: "Tác giả hoặc nguồn",
+            },
+          },
+          embed: {
+            class: Embed,
+            config: {
+              services: {
+                youtube: true,
+                vimeo: true,
+                twitter: true,
+                facebook: true,
               },
             },
           },

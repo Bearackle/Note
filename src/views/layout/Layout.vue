@@ -7,7 +7,7 @@
         :width="240"
         :show-collapsed-content="false"
         show-trigger="arrow-circle"
-        content-style="padding: 16px;"
+        content-style="padding: 16px 0; height: 100vh; display: flex; flex-direction: column;"
         bordered
       >
         <Sidebar></Sidebar>
@@ -48,11 +48,18 @@ body,
 
 .n-layout {
   width: 100%;
-  height: 100%;
+  height: 100vh;
 }
 
 .n-layout-content {
   flex: 1;
   overflow: auto;
+  height: 100vh;
+}
+
+:deep(.n-layout-sider-scroll-container) {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 </style>

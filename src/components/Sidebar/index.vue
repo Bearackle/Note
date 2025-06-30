@@ -1,703 +1,736 @@
 <template>
-  <div class="account">
-    <n-dropdown
-      trigger="click"
-      :options="options"
-      placement="bottom-start"
-      @select="handleOptionClick"
-    >
-      <div class="account-wrapper">
-        <div class="avatar-container">
-          <n-avatar
-            size="medium"
-            style="background: linear-gradient(135deg, #2080f0, #00e676)"
-          >
-            {{
-              Cookies.get("username")
-                ? Cookies.get("username").charAt(0).toUpperCase()
-                : "U"
-            }}
-          </n-avatar>
-        </div>
-        <div class="account-info">
-          <div class="user-details">
-            <span class="username">{{
-              Cookies.get("username") || "User"
-            }}</span>
-            <span class="user-email">{{ userEmail }}</span>
-          </div>
-        </div>
-      </div>
-    </n-dropdown>
-  </div>
-  <div class="quick-actions">
-    <n-tooltip placement="right" trigger="hover">
-      <template #trigger>
-        <n-button quaternary circle class="action-button">
-          <n-icon size="18"
-            ><Icon icon="material-symbols:search-rounded"
-          /></n-icon>
-        </n-button>
-      </template>
-      Quick Search
-    </n-tooltip>
-
-    <n-tooltip placement="right" trigger="hover">
-      <template #trigger>
-        <n-button quaternary circle class="action-button">
-          <n-icon size="18"
-            ><Icon icon="material-symbols:notifications-rounded"
-          /></n-icon>
-          <div class="notification-badge">3</div>
-        </n-button>
-      </template>
-      Notifications
-    </n-tooltip>
-  </div>
-  <div class="home">
-    <n-button quaternary @click="handleHomeClick" class="nav-button primary">
-      <template #icon>
-        <n-icon size="20">
-          <Icon icon="material-symbols:home-rounded" />
-        </n-icon>
-      </template>
-      Home
-    </n-button>
-  </div>
-  <div class="inbox">
-    <n-button
-      quaternary
-      class="nav-button secondary"
-      @click="showInboxModal = true"
-    >
-      <template #icon>
-        <n-icon size="20">
-          <Icon icon="material-symbols:inbox-rounded" />
-        </n-icon>
-      </template>
-      Inbox
-      <div class="inbox-counter" v-if="inboxCounter > 0">
-        {{ inboxCounter }}
-      </div>
-    </n-button>
-
-    <!-- Inbox Modal -->
-    <n-modal
-      v-model:show="showInboxModal"
-      title="Inbox Messages"
-      preset="card"
-      style="max-width: 600px"
-      :bordered="false"
-    >
-      <div class="inbox-management">
-        <div v-if="inboxMessages.length > 0" class="inbox-list">
-          <div
-            v-for="message in inboxMessages"
-            :key="message.id"
-            class="inbox-item"
-          >
-            <div class="inbox-info">
-              <n-icon size="20" class="inbox-icon">
-                <Icon icon="material-symbols:person-add" />
-              </n-icon>
-              <span class="inbox-message">
-                {{ message.inviterId }} invited you to {{ message.objectType }}
-              </span>
+  <div class="sidebar-container">
+    <div class="sidebar-fixed-top">
+      <div class="account">
+        <n-dropdown
+          trigger="click"
+          :options="options"
+          placement="bottom-start"
+          @select="handleOptionClick"
+        >
+          <div class="account-wrapper">
+            <div class="avatar-container">
+              <n-avatar
+                size="medium"
+                style="background: linear-gradient(135deg, #2080f0, #00e676)"
+              >
+                {{
+                  Cookies.get("username")
+                    ? Cookies.get("username").charAt(0).toUpperCase()
+                    : "U"
+                }}
+              </n-avatar>
             </div>
-            <div class="inbox-actions">
-              <n-button
-                type="success"
-                size="small"
-                @click="handleInvitationResponse(message.id, 'accept')"
-              >
-                Accept
-              </n-button>
-              <n-button
-                type="error"
-                size="small"
-                @click="handleInvitationResponse(message.id, 'reject')"
-              >
-                Reject
-              </n-button>
+            <div class="account-info">
+              <div class="user-details">
+                <span class="username">{{
+                  Cookies.get("username") || "User"
+                }}</span>
+                <span class="user-email">{{ userEmail }}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <n-empty v-else description="No pending invitations" />
+        </n-dropdown>
       </div>
-    </n-modal>
-  </div>
-  <div class="workspace">
-    <n-collapse>
-      <n-collapse-item name="2">
-        <template #header>
-          <div class="collapse-header">
-            <div class="header-content">
-              <n-icon size="18" class="section-icon team-icon">
-                <Icon icon="material-symbols:group-rounded" />
-              </n-icon>
-              <span>Teamspace</span>
-            </div>
-            <n-button
-              quaternary
-              size="small"
-              @click.stop="handleAddTeam"
-              class="add-button"
-            >
-              <n-icon size="16">
-                <Add />
-              </n-icon>
+      <div class="quick-actions">
+        <n-tooltip placement="right" trigger="hover">
+          <template #trigger>
+            <n-button quaternary circle class="action-button">
+              <n-icon size="18"
+                ><Icon icon="material-symbols:search-rounded"
+              /></n-icon>
             </n-button>
+          </template>
+          Quick Search
+        </n-tooltip>
+
+        <n-tooltip placement="right" trigger="hover">
+          <template #trigger>
+            <n-button quaternary circle class="action-button">
+              <n-icon size="18"
+                ><Icon icon="material-symbols:notifications-rounded"
+              /></n-icon>
+              <div class="notification-badge">3</div>
+            </n-button>
+          </template>
+          Notifications
+        </n-tooltip>
+      </div>
+      <div class="home">
+        <n-button
+          quaternary
+          @click="handleHomeClick"
+          class="nav-button primary"
+        >
+          <template #icon>
+            <n-icon size="20">
+              <Icon icon="material-symbols:home-rounded" />
+            </n-icon>
+          </template>
+          Home
+        </n-button>
+      </div>
+      <div class="inbox">
+        <n-button
+          quaternary
+          class="nav-button secondary"
+          @click="showInboxModal = true"
+        >
+          <template #icon>
+            <n-icon size="20">
+              <Icon icon="material-symbols:inbox-rounded" />
+            </n-icon>
+          </template>
+          Inbox
+          <div class="inbox-counter" v-if="inboxCounter > 0">
+            {{ inboxCounter }}
           </div>
-        </template>
-        <n-spin :show="isLoadingTeams">
-          <div>
-            <div
-              v-if="Array.isArray(teams) && teams.length > 0"
-              class="workspace-list"
-            >
+        </n-button>
+
+        <!-- Inbox Modal -->
+        <n-modal
+          v-model:show="showInboxModal"
+          title="Inbox Messages"
+          preset="card"
+          style="max-width: 600px"
+          :bordered="false"
+        >
+          <div class="inbox-management">
+            <div v-if="inboxMessages.length > 0" class="inbox-list">
               <div
-                v-for="team in teams"
-                :key="team.workspaceId"
-                class="team-item"
+                v-for="message in inboxMessages"
+                :key="message.id"
+                class="inbox-item"
               >
-                <n-button
-                  text
-                  block
-                  @click="handleWorkspaceClick(team.workspaceId)"
-                  :class="{
-                    'team-selected':
-                      teamStore.selectedTeam === team.workspaceId,
-                  }"
-                >
-                  <template #icon>
-                    <n-icon size="18" class="team-icon">
-                      <Icon icon="material-symbols:group-rounded" />
-                    </n-icon>
-                  </template>
-                  {{ team.workspaceName }}
-                </n-button>
-                <n-dropdown
-                  trigger="click"
-                  :options="teamActionOptions"
-                  placement="bottom-end"
-                  @select="(key) => handleTeamAction(key, team)"
-                >
+                <div class="inbox-info">
+                  <n-icon size="20" class="inbox-icon">
+                    <Icon icon="material-symbols:person-add" />
+                  </n-icon>
+                  <span class="inbox-message">
+                    {{ message.inviterId }} invited you to
+                    {{ message.objectType }}
+                  </span>
+                </div>
+                <div class="inbox-actions">
                   <n-button
-                    quaternary
+                    type="success"
                     size="small"
-                    class="team-actions"
-                    :class="{
-                      'team-actions-selected':
-                        teamStore.selectedTeam === team.id,
-                    }"
-                    @click.stop
+                    @click="handleInvitationResponse(message.id, 'accept')"
                   >
-                    <n-icon size="16">
-                      <EllipsisVertical />
-                    </n-icon>
+                    Accept
                   </n-button>
-                </n-dropdown>
+                  <n-button
+                    type="error"
+                    size="small"
+                    @click="handleInvitationResponse(message.id, 'reject')"
+                  >
+                    Reject
+                  </n-button>
+                </div>
               </div>
             </div>
-            <n-empty v-else description="No teams found" />
+            <n-empty v-else description="No pending invitations" />
           </div>
-        </n-spin>
-      </n-collapse-item>
-    </n-collapse>
-    <n-collapse>
-      <n-collapse-item name="1">
-        <template #header>
-          <div class="collapse-header">
-            <div class="header-content">
-              <n-icon size="18" class="section-icon">
-                <Icon icon="material-symbols:space-dashboard-rounded" />
-              </n-icon>
-              <span>Workspace</span>
-            </div>
-            <n-button
-              quaternary
-              size="small"
-              @click.stop="handleAddWorkspace"
-              class="add-button"
-            >
-              <n-icon size="16">
-                <Add />
-              </n-icon>
-            </n-button>
-          </div>
-        </template>
-        <n-spin :show="isLoading">
-          <div>
-            <div
-              v-if="Array.isArray(workspaces) && workspaces.length > 0"
-              class="workspace-list"
-            >
-              <div
-                v-for="workspace in workspaces"
-                :key="workspace.id"
-                class="workspace-item"
-              >
+        </n-modal>
+      </div>
+    </div>
+
+    <div class="sidebar-scrollable">
+      <div class="workspace">
+        <n-collapse>
+          <n-collapse-item name="2">
+            <template #header>
+              <div class="collapse-header">
+                <div class="header-content">
+                  <n-icon size="18" class="section-icon team-icon">
+                    <Icon icon="material-symbols:group-rounded" />
+                  </n-icon>
+                  <span>Teamspace</span>
+                </div>
                 <n-button
-                  text
-                  block
-                  @click="handleWorkspaceClick(workspace.id)"
-                  :class="{
-                    'workspace-selected':
-                      workspaceStore.selectedSpace === workspace.id,
-                  }"
+                  quaternary
+                  size="small"
+                  @click.stop="handleAddTeam"
+                  class="add-button"
                 >
-                  <template #icon>
-                    <n-icon size="18" class="workspace-icon">
-                      <Icon icon="material-symbols:space-dashboard-rounded" />
-                    </n-icon>
-                  </template>
-                  {{ workspace.name }}
-                  <div class="workspace-meta">
-                    <div class="workspace-indicator"></div>
-                  </div>
+                  <n-icon size="16">
+                    <Add />
+                  </n-icon>
                 </n-button>
               </div>
-            </div>
-            <n-empty v-else description="No workspaces found" />
+            </template>
+            <n-spin :show="isLoadingTeams">
+              <div>
+                <div
+                  v-if="Array.isArray(teams) && teams.length > 0"
+                  class="workspace-list"
+                >
+                  <div
+                    v-for="team in teams"
+                    :key="team.workspaceId"
+                    class="team-item"
+                  >
+                    <n-button
+                      text
+                      block
+                      @click="handleWorkspaceClick(team.workspaceId)"
+                      :class="{
+                        'team-selected':
+                          teamStore.selectedTeam === team.workspaceId,
+                      }"
+                    >
+                      <template #icon>
+                        <n-icon size="18" class="team-icon">
+                          <Icon icon="material-symbols:group-rounded" />
+                        </n-icon>
+                      </template>
+                      {{ team.workspaceName }}
+                    </n-button>
+                    <n-dropdown
+                      trigger="click"
+                      :options="teamActionOptions"
+                      placement="bottom-end"
+                      @select="(key) => handleTeamAction(key, team)"
+                    >
+                      <n-button
+                        quaternary
+                        size="small"
+                        class="team-actions"
+                        :class="{
+                          'team-actions-selected':
+                            teamStore.selectedTeam === team.id,
+                        }"
+                        @click.stop
+                      >
+                        <n-icon size="16">
+                          <EllipsisVertical />
+                        </n-icon>
+                      </n-button>
+                    </n-dropdown>
+                  </div>
+                </div>
+                <n-empty v-else description="No teams found" />
+              </div>
+            </n-spin>
+          </n-collapse-item>
+        </n-collapse>
+        <n-collapse>
+          <n-collapse-item name="1">
+            <template #header>
+              <div class="collapse-header">
+                <div class="header-content">
+                  <n-icon size="18" class="section-icon">
+                    <Icon icon="material-symbols:space-dashboard-rounded" />
+                  </n-icon>
+                  <span>Workspace</span>
+                </div>
+                <n-button
+                  quaternary
+                  size="small"
+                  @click.stop="handleAddWorkspace"
+                  class="add-button"
+                >
+                  <n-icon size="16">
+                    <Add />
+                  </n-icon>
+                </n-button>
+              </div>
+            </template>
+            <n-spin :show="isLoading">
+              <div>
+                <div
+                  v-if="Array.isArray(workspaces) && workspaces.length > 0"
+                  class="workspace-list"
+                >
+                  <div
+                    v-for="workspace in workspaces"
+                    :key="workspace.id"
+                    class="workspace-item"
+                  >
+                    <n-button
+                      text
+                      block
+                      @click="handleWorkspaceClick(workspace.id)"
+                      :class="{
+                        'workspace-selected':
+                          workspaceStore.selectedSpace === workspace.id,
+                      }"
+                    >
+                      <template #icon>
+                        <n-icon size="18" class="workspace-icon">
+                          <Icon
+                            icon="material-symbols:space-dashboard-rounded"
+                          />
+                        </n-icon>
+                      </template>
+                      {{ workspace.name }}
+                      <div class="workspace-meta">
+                        <div class="workspace-indicator"></div>
+                      </div>
+                    </n-button>
+                  </div>
+                </div>
+                <n-empty v-else description="No workspaces found" />
+              </div>
+            </n-spin>
+          </n-collapse-item>
+        </n-collapse>
+        <n-modal
+          v-model:show="showModalWorkspace"
+          title="Tạo workspace"
+          preset="dialog"
+          positive-text="Save"
+          negative-text="Cancel"
+          @positive-click="handleSaveWorkspace"
+          @negative-click="showModalWorkspace = false"
+          @keydown.enter="handleSaveWorkspace"
+          @keydown.esc="showModalWorkspace = false"
+        >
+          <n-form ref="formRef" :model="formData" :rules="formRules">
+            <n-form-item label="Name" path="name">
+              <n-input v-model:value="formData.name" placeholder="Enter name" />
+            </n-form-item>
+            <n-form-item label="Description" path="description">
+              <n-input
+                v-model:value="formData.description"
+                type="textarea"
+                placeholder="Enter description"
+              />
+            </n-form-item>
+          </n-form>
+        </n-modal>
+      </div>
+      <div class="pages">
+        <n-collapse
+          :default-expanded-names="expandedNames"
+          v-model:expanded-names="expandedNames"
+        >
+          <n-collapse-item name="1">
+            <template #header>
+              <div class="collapse-header">
+                <div class="header-content">
+                  <n-icon size="18" class="section-icon">
+                    <Icon icon="material-symbols:description-rounded" />
+                  </n-icon>
+                  <span>Pages</span>
+                </div>
+                <n-button
+                  quaternary
+                  size="small"
+                  @click.stop="handleAddPages"
+                  class="add-button"
+                >
+                  <n-icon size="16">
+                    <Add />
+                  </n-icon>
+                </n-button>
+              </div>
+            </template>
+            <n-spin :show="isLoadingPages">
+              <div>
+                <div
+                  v-if="Array.isArray(pages) && pages.length > 0"
+                  class="workspace-list"
+                >
+                  <div v-for="page in pages" :key="page.id" class="page-item">
+                    <n-button
+                      text
+                      block
+                      @click="handlePageClick(page.id)"
+                      :class="{
+                        'page-selected': pageStore.selectedPage === page.id,
+                      }"
+                    >
+                      <template #icon>
+                        <n-icon size="18" class="page-icon">
+                          <Icon icon="material-symbols:description-rounded" />
+                        </n-icon>
+                      </template>
+                      <span class="page-title">{{
+                        page.title || "Untitled"
+                      }}</span>
+                    </n-button>
+                    <n-dropdown
+                      trigger="click"
+                      :options="pageOptions"
+                      placement="bottom-end"
+                      @select="(key) => handlePageAction(key, page)"
+                    >
+                      <n-button
+                        quaternary
+                        size="small"
+                        class="page-actions"
+                        :class="{
+                          'page-actions-selected':
+                            pageStore.selectedPage === page.id,
+                        }"
+                        @click.stop
+                      >
+                        <n-icon size="16">
+                          <EllipsisVertical />
+                        </n-icon>
+                      </n-button>
+                    </n-dropdown>
+                  </div>
+                </div>
+                <n-empty v-else description="No pages found" />
+              </div>
+            </n-spin>
+          </n-collapse-item>
+        </n-collapse>
+      </div>
+    </div>
+
+    <div class="sidebar-fixed-bottom">
+      <div class="nailed-section">
+        <n-button
+          quaternary
+          block
+          class="utility-button invite-button"
+          @click="showInviteMemberModal = true"
+        >
+          <template #icon>
+            <n-icon size="20">
+              <Icon icon="material-symbols:person-add-rounded" />
+            </n-icon>
+          </template>
+          Invite Members
+          <div class="invite-indicator pulse"></div>
+        </n-button>
+
+        <n-button
+          quaternary
+          block
+          class="utility-button"
+          @click="showTrashModal = true"
+        >
+          <div class="utility-content">
+            <n-icon size="18">
+              <Icon icon="material-symbols:delete-rounded" />
+            </n-icon>
+            <span>Trash</span>
           </div>
-        </n-spin>
-      </n-collapse-item>
-    </n-collapse>
+          <div v-if="trashedPages.length > 0" class="utility-badge">
+            {{ trashedPages.length }}
+          </div>
+        </n-button>
+
+        <n-button
+          quaternary
+          block
+          class="utility-button"
+          @click="showSettingsModal = true"
+        >
+          <div class="utility-content">
+            <n-icon size="18">
+              <Icon icon="material-symbols:settings-rounded" />
+            </n-icon>
+            <span>Settings</span>
+          </div>
+        </n-button>
+      </div>
+    </div>
+
+    <!-- Add delete confirmation modal -->
     <n-modal
-      v-model:show="showModalWorkspace"
-      title="Tạo workspace"
+      v-model:show="showDeleteModal"
+      title="Xác nhận xóa"
       preset="dialog"
-      positive-text="Save"
-      negative-text="Cancel"
-      @positive-click="handleSaveWorkspace"
-      @negative-click="showModalWorkspace = false"
-      @keydown.enter="handleSaveWorkspace"
-      @keydown.esc="showModalWorkspace = false"
+      positive-text="Xóa"
+      negative-text="Hủy"
+      @positive-click="confirmDeletePage"
+      @negative-click="showDeleteModal = false"
+      @keydown.enter="confirmDeletePage"
+      @keydown.esc="showDeleteModal = false"
     >
-      <n-form ref="formRef" :model="formData" :rules="formRules">
-        <n-form-item label="Name" path="name">
-          <n-input v-model:value="formData.name" placeholder="Enter name" />
+      <n-text>Bạn có chắc chắn muốn xóa trang này không?</n-text>
+    </n-modal>
+
+    <!-- Add update title modal -->
+    <n-modal
+      v-model:show="showUpdateTitleModal"
+      title="Cập nhật tiêu đề"
+      preset="dialog"
+      positive-text="Cập nhật"
+      negative-text="Hủy"
+      @positive-click="confirmUpdateTitle"
+      @negative-click="showUpdateTitleModal = false"
+      @keydown.enter="confirmUpdateTitle"
+      @keydown.esc="showUpdateTitleModal = false"
+    >
+      <n-form
+        ref="updateTitleFormRef"
+        :model="updateTitleForm"
+        :rules="updateTitleRules"
+      >
+        <n-form-item label="Tiêu đề" path="title">
+          <n-input
+            v-model:value="updateTitleForm.title"
+            placeholder="Nhập tiêu đề mới"
+          />
+        </n-form-item>
+      </n-form>
+    </n-modal>
+
+    <!-- Settings Modal -->
+    <n-modal
+      v-model:show="showSettingsModal"
+      title="Cài đặt"
+      preset="dialog"
+      positive-text="Lưu"
+      negative-text="Hủy"
+      @positive-click="handleSaveSettings"
+      @negative-click="showSettingsModal = false"
+    >
+      <n-form
+        ref="settingsFormRef"
+        :model="settingsForm"
+        :rules="settingsRules"
+      >
+        <n-form-item label="Tên người dùng" path="username">
+          <n-input
+            v-model:value="settingsForm.username"
+            placeholder="Nhập tên người dùng"
+          />
+        </n-form-item>
+        <n-form-item label="Email" path="email">
+          <n-input
+            v-model:value="settingsForm.email"
+            placeholder="Nhập email"
+          />
+        </n-form-item>
+      </n-form>
+    </n-modal>
+
+    <!-- Team Management Modals -->
+    <n-modal
+      v-model:show="showTeamModal"
+      title="Create Team"
+      preset="dialog"
+      positive-text="Create"
+      negative-text="Cancel"
+      @positive-click="handleSaveTeam"
+      @negative-click="showTeamModal = false"
+    >
+      <n-form ref="teamFormRef" :model="teamForm" :rules="teamFormRules">
+        <n-form-item label="Team Name" path="name">
+          <n-input
+            v-model:value="teamForm.name"
+            placeholder="Enter team name"
+          />
         </n-form-item>
         <n-form-item label="Description" path="description">
           <n-input
-            v-model:value="formData.description"
+            v-model:value="teamForm.description"
             type="textarea"
-            placeholder="Enter description"
+            placeholder="Enter team description"
+          />
+        </n-form-item>
+      </n-form>
+    </n-modal>
+
+    <n-modal
+      v-model:show="showMemberModal"
+      title="Manage Team Members"
+      preset="dialog"
+      style="max-width: 600px"
+    >
+      <div class="member-management">
+        <div class="member-list">
+          <div
+            v-for="member in teamMembers"
+            :key="member.id"
+            class="member-item"
+          >
+            <div class="member-info">
+              <n-avatar
+                size="small"
+                :src="member.avatar"
+                :fallback-src="member.avatar"
+              >
+                {{ member.username.charAt(0).toUpperCase() }}
+              </n-avatar>
+              <span class="member-name">{{ member.username }}</span>
+              <n-tag
+                size="small"
+                :type="member.role === 'admin' ? 'success' : 'default'"
+              >
+                {{ member.role }}
+              </n-tag>
+            </div>
+            <n-button
+              quaternary
+              size="small"
+              @click="handleRemoveMember(member)"
+              v-if="member.role !== 'admin'"
+            >
+              <n-icon size="16">
+                <Icon icon="material-symbols:person-remove" />
+              </n-icon>
+            </n-button>
+          </div>
+        </div>
+        <div class="add-member-section">
+          <n-input-group>
+            <n-input
+              v-model:value="newMemberEmail"
+              placeholder="Enter email address"
+            />
+            <n-button type="primary" @click="handleInviteMember">
+              Invite
+            </n-button>
+          </n-input-group>
+        </div>
+      </div>
+    </n-modal>
+
+    <n-modal
+      v-model:show="showTeamSettingsModal"
+      title="Team Settings"
+      preset="dialog"
+      positive-text="Save"
+      negative-text="Cancel"
+      @positive-click="handleSaveTeamSettings"
+      @negative-click="showTeamSettingsModal = false"
+    >
+      <n-form
+        ref="teamSettingsFormRef"
+        :model="teamSettingsForm"
+        :rules="teamSettingsRules"
+      >
+        <n-form-item label="Team Name" path="name">
+          <n-input
+            v-model:value="teamSettingsForm.name"
+            placeholder="Enter team name"
+          />
+        </n-form-item>
+        <n-form-item label="Description" path="description">
+          <n-input
+            v-model:value="teamSettingsForm.description"
+            type="textarea"
+            placeholder="Enter team description"
+          />
+        </n-form-item>
+        <n-form-item label="Team Visibility" path="visibility">
+          <n-select
+            v-model:value="teamSettingsForm.visibility"
+            :options="[
+              { label: 'Private', value: 'private' },
+              { label: 'Public', value: 'public' },
+            ]"
+          />
+        </n-form-item>
+      </n-form>
+    </n-modal>
+
+    <n-modal
+      v-model:show="showDeleteTeamModal"
+      title="Delete Team"
+      preset="dialog"
+      positive-text="Delete"
+      negative-text="Cancel"
+      @positive-click="handleConfirmDeleteTeam"
+      @negative-click="showDeleteTeamModal = false"
+    >
+      <p>
+        Are you sure you want to delete this team? This action cannot be undone.
+      </p>
+    </n-modal>
+
+    <!-- Add Trash Modal -->
+    <n-modal
+      v-model:show="showTrashModal"
+      title="Trash"
+      preset="card"
+      style="max-width: 480px"
+      :bordered="false"
+    >
+      <div class="trash-management">
+        <div class="trash-search">
+          <n-input
+            v-model:value="trashSearchQuery"
+            placeholder="Search pages in Trash"
+            clearable
+          >
+            <template #prefix>
+              <n-icon size="18">
+                <Icon icon="material-symbols:search-rounded" />
+              </n-icon>
+            </template>
+          </n-input>
+        </div>
+        <div v-if="filteredTrashPages.length > 0" class="trash-list">
+          <div
+            v-for="page in filteredTrashPages"
+            :key="page.id"
+            class="trash-item"
+          >
+            <div class="trash-info">
+              <n-icon size="18" class="trash-icon">
+                <Icon icon="material-symbols:description-rounded" />
+              </n-icon>
+              <span class="trash-title">{{ page.title || "Untitled" }}</span>
+            </div>
+            <div class="trash-actions">
+              <n-button
+                quaternary
+                circle
+                size="small"
+                @click="restoreFromTrash(page)"
+              >
+                <n-icon size="16">
+                  <Icon icon="material-symbols:restore-rounded" />
+                </n-icon>
+              </n-button>
+              <n-button
+                quaternary
+                circle
+                size="small"
+                @click="deleteFromTrash(page)"
+              >
+                <n-icon size="16">
+                  <Icon icon="material-symbols:delete-forever-rounded" />
+                </n-icon>
+              </n-button>
+            </div>
+          </div>
+        </div>
+        <n-empty v-else description="No items in trash" />
+      </div>
+    </n-modal>
+
+    <!-- Add Invite Member Modal -->
+    <n-modal
+      v-model:show="showInviteMemberModal"
+      title="Invite Member"
+      preset="dialog"
+      positive-text="Invite"
+      negative-text="Cancel"
+      @positive-click="handleInviteMemberSubmit"
+      @negative-click="showInviteMemberModal = false"
+    >
+      <n-form
+        ref="inviteMemberFormRef"
+        :model="inviteMemberForm"
+        :rules="inviteMemberRules"
+      >
+        <n-form-item label="Email" path="email">
+          <n-input
+            v-model:value="inviteMemberForm.email"
+            placeholder="Enter email address"
+          />
+        </n-form-item>
+        <n-form-item label="Team" path="teamId">
+          <n-select
+            v-model:value="inviteMemberForm.teamId"
+            :options="teamOptions"
+            placeholder="Select team"
+            :loading="isLoadingTeams"
           />
         </n-form-item>
       </n-form>
     </n-modal>
   </div>
-  <div class="pages">
-    <n-collapse
-      :default-expanded-names="expandedNames"
-      v-model:expanded-names="expandedNames"
-    >
-      <n-collapse-item name="1">
-        <template #header>
-          <div class="collapse-header">
-            <div class="header-content">
-              <n-icon size="18" class="section-icon">
-                <Icon icon="material-symbols:description-rounded" />
-              </n-icon>
-              <span>Pages</span>
-            </div>
-            <n-button
-              quaternary
-              size="small"
-              @click.stop="handleAddPages"
-              class="add-button"
-            >
-              <n-icon size="16">
-                <Add />
-              </n-icon>
-            </n-button>
-          </div>
-        </template>
-        <n-spin :show="isLoadingPages">
-          <div>
-            <div
-              v-if="Array.isArray(pages) && pages.length > 0"
-              class="workspace-list"
-            >
-              <div v-for="page in pages" :key="page.id" class="page-item">
-                <n-button
-                  text
-                  block
-                  @click="handlePageClick(page.id)"
-                  :class="{
-                    'page-selected': pageStore.selectedPage === page.id,
-                  }"
-                >
-                  <template #icon>
-                    <n-icon size="18" class="page-icon">
-                      <Icon icon="material-symbols:description-rounded" />
-                    </n-icon>
-                  </template>
-                  <span class="page-title">{{ page.title || "Untitled" }}</span>
-                </n-button>
-                <n-dropdown
-                  trigger="click"
-                  :options="pageOptions"
-                  placement="bottom-end"
-                  @select="(key) => handlePageAction(key, page)"
-                >
-                  <n-button
-                    quaternary
-                    size="small"
-                    class="page-actions"
-                    :class="{
-                      'page-actions-selected':
-                        pageStore.selectedPage === page.id,
-                    }"
-                    @click.stop
-                  >
-                    <n-icon size="16">
-                      <EllipsisVertical />
-                    </n-icon>
-                  </n-button>
-                </n-dropdown>
-              </div>
-            </div>
-            <n-empty v-else description="No pages found" />
-          </div>
-        </n-spin>
-      </n-collapse-item>
-    </n-collapse>
-  </div>
-  <div class="nailed-section">
-    <n-button
-      quaternary
-      block
-      class="utility-button invite-button"
-      @click="showInviteMemberModal = true"
-    >
-      <template #icon>
-        <n-icon size="20">
-          <Icon icon="material-symbols:person-add-rounded" />
-        </n-icon>
-      </template>
-      Invite Members
-      <div class="invite-indicator pulse"></div>
-    </n-button>
-
-    <n-button
-      quaternary
-      block
-      class="utility-button"
-      @click="showTrashModal = true"
-    >
-      <div class="utility-content">
-        <n-icon size="18">
-          <Icon icon="material-symbols:delete-rounded" />
-        </n-icon>
-        <span>Trash</span>
-      </div>
-      <div v-if="trashedPages.length > 0" class="utility-badge">
-        {{ trashedPages.length }}
-      </div>
-    </n-button>
-
-    <n-button
-      quaternary
-      block
-      class="utility-button"
-      @click="showSettingsModal = true"
-    >
-      <div class="utility-content">
-        <n-icon size="18">
-          <Icon icon="material-symbols:settings-rounded" />
-        </n-icon>
-        <span>Settings</span>
-      </div>
-    </n-button>
-  </div>
-
-  <!-- Add delete confirmation modal -->
-  <n-modal
-    v-model:show="showDeleteModal"
-    title="Xác nhận xóa"
-    preset="dialog"
-    positive-text="Xóa"
-    negative-text="Hủy"
-    @positive-click="confirmDeletePage"
-    @negative-click="showDeleteModal = false"
-    @keydown.enter="confirmDeletePage"
-    @keydown.esc="showDeleteModal = false"
-  >
-    <n-text>Bạn có chắc chắn muốn xóa trang này không?</n-text>
-  </n-modal>
-
-  <!-- Add update title modal -->
-  <n-modal
-    v-model:show="showUpdateTitleModal"
-    title="Cập nhật tiêu đề"
-    preset="dialog"
-    positive-text="Cập nhật"
-    negative-text="Hủy"
-    @positive-click="confirmUpdateTitle"
-    @negative-click="showUpdateTitleModal = false"
-    @keydown.enter="confirmUpdateTitle"
-    @keydown.esc="showUpdateTitleModal = false"
-  >
-    <n-form
-      ref="updateTitleFormRef"
-      :model="updateTitleForm"
-      :rules="updateTitleRules"
-    >
-      <n-form-item label="Tiêu đề" path="title">
-        <n-input
-          v-model:value="updateTitleForm.title"
-          placeholder="Nhập tiêu đề mới"
-        />
-      </n-form-item>
-    </n-form>
-  </n-modal>
-
-  <!-- Settings Modal -->
-  <n-modal
-    v-model:show="showSettingsModal"
-    title="Cài đặt"
-    preset="dialog"
-    positive-text="Lưu"
-    negative-text="Hủy"
-    @positive-click="handleSaveSettings"
-    @negative-click="showSettingsModal = false"
-  >
-    <n-form ref="settingsFormRef" :model="settingsForm" :rules="settingsRules">
-      <n-form-item label="Tên người dùng" path="username">
-        <n-input
-          v-model:value="settingsForm.username"
-          placeholder="Nhập tên người dùng"
-        />
-      </n-form-item>
-      <n-form-item label="Email" path="email">
-        <n-input v-model:value="settingsForm.email" placeholder="Nhập email" />
-      </n-form-item>
-    </n-form>
-  </n-modal>
-
-  <!-- Team Management Modals -->
-  <n-modal
-    v-model:show="showTeamModal"
-    title="Create Team"
-    preset="dialog"
-    positive-text="Create"
-    negative-text="Cancel"
-    @positive-click="handleSaveTeam"
-    @negative-click="showTeamModal = false"
-  >
-    <n-form ref="teamFormRef" :model="teamForm" :rules="teamFormRules">
-      <n-form-item label="Team Name" path="name">
-        <n-input v-model:value="teamForm.name" placeholder="Enter team name" />
-      </n-form-item>
-      <n-form-item label="Description" path="description">
-        <n-input
-          v-model:value="teamForm.description"
-          type="textarea"
-          placeholder="Enter team description"
-        />
-      </n-form-item>
-    </n-form>
-  </n-modal>
-
-  <n-modal
-    v-model:show="showMemberModal"
-    title="Manage Team Members"
-    preset="dialog"
-    style="max-width: 600px"
-  >
-    <div class="member-management">
-      <div class="member-list">
-        <div v-for="member in teamMembers" :key="member.id" class="member-item">
-          <div class="member-info">
-            <n-avatar
-              size="small"
-              :src="member.avatar"
-              :fallback-src="member.avatar"
-            >
-              {{ member.username.charAt(0).toUpperCase() }}
-            </n-avatar>
-            <span class="member-name">{{ member.username }}</span>
-            <n-tag
-              size="small"
-              :type="member.role === 'admin' ? 'success' : 'default'"
-            >
-              {{ member.role }}
-            </n-tag>
-          </div>
-          <n-button
-            quaternary
-            size="small"
-            @click="handleRemoveMember(member)"
-            v-if="member.role !== 'admin'"
-          >
-            <n-icon size="16">
-              <Icon icon="material-symbols:person-remove" />
-            </n-icon>
-          </n-button>
-        </div>
-      </div>
-      <div class="add-member-section">
-        <n-input-group>
-          <n-input
-            v-model:value="newMemberEmail"
-            placeholder="Enter email address"
-          />
-          <n-button type="primary" @click="handleInviteMember">
-            Invite
-          </n-button>
-        </n-input-group>
-      </div>
-    </div>
-  </n-modal>
-
-  <n-modal
-    v-model:show="showTeamSettingsModal"
-    title="Team Settings"
-    preset="dialog"
-    positive-text="Save"
-    negative-text="Cancel"
-    @positive-click="handleSaveTeamSettings"
-    @negative-click="showTeamSettingsModal = false"
-  >
-    <n-form
-      ref="teamSettingsFormRef"
-      :model="teamSettingsForm"
-      :rules="teamSettingsRules"
-    >
-      <n-form-item label="Team Name" path="name">
-        <n-input
-          v-model:value="teamSettingsForm.name"
-          placeholder="Enter team name"
-        />
-      </n-form-item>
-      <n-form-item label="Description" path="description">
-        <n-input
-          v-model:value="teamSettingsForm.description"
-          type="textarea"
-          placeholder="Enter team description"
-        />
-      </n-form-item>
-      <n-form-item label="Team Visibility" path="visibility">
-        <n-select
-          v-model:value="teamSettingsForm.visibility"
-          :options="[
-            { label: 'Private', value: 'private' },
-            { label: 'Public', value: 'public' },
-          ]"
-        />
-      </n-form-item>
-    </n-form>
-  </n-modal>
-
-  <n-modal
-    v-model:show="showDeleteTeamModal"
-    title="Delete Team"
-    preset="dialog"
-    positive-text="Delete"
-    negative-text="Cancel"
-    @positive-click="handleConfirmDeleteTeam"
-    @negative-click="showDeleteTeamModal = false"
-  >
-    <p>
-      Are you sure you want to delete this team? This action cannot be undone.
-    </p>
-  </n-modal>
-
-  <!-- Add Trash Modal -->
-  <n-modal
-    v-model:show="showTrashModal"
-    title="Trash"
-    preset="card"
-    style="max-width: 480px"
-    :bordered="false"
-  >
-    <div class="trash-management">
-      <div class="trash-search">
-        <n-input
-          v-model:value="trashSearchQuery"
-          placeholder="Search pages in Trash"
-          clearable
-        >
-          <template #prefix>
-            <n-icon size="18">
-              <Icon icon="material-symbols:search-rounded" />
-            </n-icon>
-          </template>
-        </n-input>
-      </div>
-      <div v-if="filteredTrashPages.length > 0" class="trash-list">
-        <div
-          v-for="page in filteredTrashPages"
-          :key="page.id"
-          class="trash-item"
-        >
-          <div class="trash-info">
-            <n-icon size="18" class="trash-icon">
-              <Icon icon="material-symbols:description-rounded" />
-            </n-icon>
-            <span class="trash-title">{{ page.title || "Untitled" }}</span>
-          </div>
-          <div class="trash-actions">
-            <n-button
-              quaternary
-              circle
-              size="small"
-              @click="restoreFromTrash(page)"
-            >
-              <n-icon size="16">
-                <Icon icon="material-symbols:restore-rounded" />
-              </n-icon>
-            </n-button>
-            <n-button
-              quaternary
-              circle
-              size="small"
-              @click="deleteFromTrash(page)"
-            >
-              <n-icon size="16">
-                <Icon icon="material-symbols:delete-forever-rounded" />
-              </n-icon>
-            </n-button>
-          </div>
-        </div>
-      </div>
-      <n-empty v-else description="No items in trash" />
-    </div>
-  </n-modal>
-
-  <!-- Add Invite Member Modal -->
-  <n-modal
-    v-model:show="showInviteMemberModal"
-    title="Invite Member"
-    preset="dialog"
-    positive-text="Invite"
-    negative-text="Cancel"
-    @positive-click="handleInviteMemberSubmit"
-    @negative-click="showInviteMemberModal = false"
-  >
-    <n-form
-      ref="inviteMemberFormRef"
-      :model="inviteMemberForm"
-      :rules="inviteMemberRules"
-    >
-      <n-form-item label="Email" path="email">
-        <n-input
-          v-model:value="inviteMemberForm.email"
-          placeholder="Enter email address"
-        />
-      </n-form-item>
-      <n-form-item label="Team" path="teamId">
-        <n-select
-          v-model:value="inviteMemberForm.teamId"
-          :options="teamOptions"
-          placeholder="Select team"
-          :loading="isLoadingTeams"
-        />
-      </n-form-item>
-    </n-form>
-  </n-modal>
 </template>
 <script>
 import {
@@ -1189,22 +1222,37 @@ export default defineComponent({
 
     const handleInvitationResponse = async (invitationId, action) => {
       try {
-        const response = await api.put(
-          `/workspace/member/invitations/${invitationId}`,
-          {
-            status: action === "accept" ? "accepted" : "rejected",
-          }
-        );
-
-        if (response.data.code === 200) {
-          // Remove the invitation from the list
-          inboxMessages.value = inboxMessages.value.filter(
-            (msg) => msg.id !== invitationId
+        if (action == "accept") {
+          const response = await api.post(
+            `/workspace/member/accept/invitation`,
+            {
+              id: invitationId,
+            }
           );
-          // Update counter
-          inboxCounter.value = inboxMessages.value.filter(
-            (item) => item.status === "pending"
-          ).length;
+          if (response.data.code === 200) {
+            // Remove the invitation from the list
+            inboxMessages.value = inboxMessages.value.filter(
+              (msg) => msg.id !== invitationId
+            );
+          }
+        } else if (action == "reject") {
+          const response = await api.post(
+            `/workspace/member/invitation/update-status`,
+            {
+              id: invitationId,
+              status: "rejected",
+            }
+          );
+          if (response.data.code === 200) {
+            // Remove the invitation from the list
+            inboxMessages.value = inboxMessages.value.filter(
+              (msg) => msg.id !== invitationId
+            );
+            // Update counter
+            inboxCounter.value = inboxMessages.value.filter(
+              (item) => item.status === "pending"
+            ).length;
+          }
         }
       } catch (error) {
         console.error(`Error ${action}ing invitation:`, error);
@@ -1218,6 +1266,7 @@ export default defineComponent({
     const selectedTeam = ref(null);
     const teamMembers = ref([]);
     const newMemberEmail = ref("");
+    const teamFormRef = ref(null);
 
     const teamForm = ref({
       name: "",
@@ -1254,7 +1303,10 @@ export default defineComponent({
     const handleSaveTeam = async () => {
       try {
         await teamFormRef.value?.validate();
-        const response = await api.post("/team/create", teamForm.value);
+        const response = await api.post("/workspace/create-team", {
+          name: teamForm.value.name,
+          description: teamForm.value.description,
+        });
         if (response.data) {
           teamStore.addTeam(response.data);
           showTeamModal.value = false;
@@ -1447,15 +1499,15 @@ export default defineComponent({
 
     const handleInviteMemberSubmit = async () => {
       try {
-        await inviteMemberFormRef.value?.validate();
-        const response = await api.post(
-          `/team/${inviteMemberForm.value.teamId}/invite`,
-          {
-            email: inviteMemberForm.value.email,
-          }
-        );
-        if (response.data) {
-          teamMembers.value.push(response.data);
+        //    await inviteMemberFormRef.value?.validate();
+        console.log(inviteMemberForm.value);
+        const response = await api.post("/workspace/member/invitation", {
+          inviteeEmail: inviteMemberForm.value.email,
+          objectId: inviteMemberForm.value.teamId,
+          role: "teamspace_member",
+        });
+        console.log(response);
+        if (response.data.code === 200) {
           inviteMemberForm.value = {
             email: "",
             teamId: null,
@@ -1519,6 +1571,7 @@ export default defineComponent({
       teamMembers,
       newMemberEmail,
       teamForm,
+      teamFormRef,
       teamFormRules,
       teamSettingsForm,
       teamSettingsRules,
@@ -1552,6 +1605,55 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.sidebar-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-fixed-top {
+  flex-shrink: 0;
+}
+
+.sidebar-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  margin-bottom: 8px;
+  /* Notion-like scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(55, 53, 47, 0.1) transparent;
+}
+
+.sidebar-scrollable::-webkit-scrollbar {
+  width: 7px;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 3px;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-scrollable:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(55, 53, 47, 0.2);
+}
+
+.sidebar-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(55, 53, 47, 0.4);
+}
+
+.sidebar-fixed-bottom {
+  flex-shrink: 0;
+  position: relative;
+}
+
 /* Base styles */
 :deep(*) {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -1664,7 +1766,7 @@ export default defineComponent({
 /* Workspace and Pages sections */
 .workspace,
 .pages {
-  padding: 8px 12px;
+  padding: 0 12px;
 }
 
 :deep(.n-collapse) {
@@ -1852,21 +1954,19 @@ export default defineComponent({
 
 /* Bottom section */
 .nailed-section {
-  position: sticky;
-  bottom: 0;
   width: 100%;
-  padding: 16px;
+  padding: 14px;
   background: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.9)
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 20%,
+    rgba(255, 255, 255, 0.95) 100%
   );
-  backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(6px);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  border-top: 1px solid rgba(55, 53, 47, 0.1);
 }
 
 .utility-button {
@@ -2295,5 +2395,13 @@ export default defineComponent({
 
 .inbox-actions .n-button {
   min-width: 80px;
+}
+
+/* Add these utility classes */
+.account,
+.quick-actions,
+.home,
+.inbox {
+  background: #ffffff;
 }
 </style>

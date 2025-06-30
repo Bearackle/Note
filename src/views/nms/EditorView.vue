@@ -324,6 +324,7 @@ export default {
   padding: 0;
   position: relative;
   background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+  overflow: hidden; /* Prevent container from scrolling */
 }
 
 .taskbar {
@@ -493,11 +494,11 @@ export default {
 
 .editor-wrapper {
   padding-top: 64px;
-  height: 100%;
+  height: calc(100vh - 64px); /* Subtract taskbar height */
   width: 100%;
   min-width: 100%;
-  overflow-y: auto;
   position: relative;
+  overflow: hidden; /* Remove scroll from wrapper */
 }
 
 .editor {
@@ -505,7 +506,7 @@ export default {
   height: 100%;
   width: 100%;
   min-width: 100%;
-  overflow-y: auto;
+  overflow-y: auto; /* Only editor content scrolls */
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
