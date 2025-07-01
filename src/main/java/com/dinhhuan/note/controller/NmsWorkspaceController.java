@@ -9,6 +9,7 @@ import com.dinhhuan.note.service.NmsWorkspaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -45,6 +46,15 @@ public class NmsWorkspaceController {
             return CommonResult.success(list);
         }
         return CommonResult.failed();
+    }
+    @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> updateWorkspace(@PathVariable("id") Long wid, @RequestBody WorkspaceParam param) {
+        Integer count = nmsTeamspaceService.update(wid, param);
+        if(count != null && count > 0) {
+            return CommonResult.success(count);
+        } else
+            return CommonResult.failed();
     }
     @RequestMapping(value = "/create-team", method = RequestMethod.POST)
     @ResponseBody

@@ -49,4 +49,14 @@ public class NmsTeamspaceServiceImpl implements NmsTeamspaceService {
         UmsUser currentUser = umsUserService.getCurrentUser();
         return teamspaceDao.getTeamspaceByUserId(currentUser.getId());
     }
+
+    @Override
+    public Integer update(Long wid,WorkspaceParam param) {
+        NmsWorkspace nmsWorkspace = new NmsWorkspace();
+        nmsWorkspace.setId(wid);
+        nmsWorkspace.setName(param.getName());
+        nmsWorkspace.setDescription(param.getDescription());
+       int count = nmsWorkspaceMapper.updateByPrimaryKeySelective(nmsWorkspace);
+       return count;
+    }
 }

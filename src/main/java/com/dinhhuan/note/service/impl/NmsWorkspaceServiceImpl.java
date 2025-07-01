@@ -59,7 +59,7 @@ public class NmsWorkspaceServiceImpl implements NmsWorkspaceService {
         NmsWorkspaceExample example = new NmsWorkspaceExample();
         NmsWorkspaceExample.Criteria criteria = example.createCriteria();
         criteria.andCreatedByEqualTo(user.getId());
-        List<NmsWorkspace> list = nmsWorkspaceMapper.selectByExample(example);
+        List<NmsWorkspace> list = nmsWorkspaceMapper.selectByExampleWithBLOBs(example);
         if(list != null && !list.isEmpty()) {
             return list;
         }
