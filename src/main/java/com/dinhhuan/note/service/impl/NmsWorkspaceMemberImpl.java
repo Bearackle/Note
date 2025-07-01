@@ -5,6 +5,7 @@ import cn.hutool.log.LogFactory;
 import com.dinhhuan.note.dto.InvitationMessage;
 import com.dinhhuan.note.dto.TeamspaceInvitationDto;
 import com.dinhhuan.note.dto.WorkspaceMemberParam;
+import com.dinhhuan.note.dto.WorkspaceParam;
 import com.dinhhuan.note.mapper.NmsWorkspaceMapper;
 import com.dinhhuan.note.mapper.NmsWorkspaceMemberMapper;
 import com.dinhhuan.note.mapper.UmsInvitationMapper;
@@ -87,9 +88,33 @@ public class NmsWorkspaceMemberImpl implements NmsWorkspaceMemberService {
         UmsInvitationExample example = new UmsInvitationExample();
         UmsInvitationExample.Criteria criteria = example.createCriteria();
         criteria.andInviteeEmailEqualTo(umsUserService.getCurrentUser().getEmail());
+        criteria.andStatusEqualTo("pending");
         List<UmsInvitation> invitations = umsInvitationMapper.selectByExample(example);
         return invitations;
     }
+
+    @Override
+    public int updateInvitationStatus(Long id, String status) {
+        UmsInvitation invitation = new UmsInvitation();
+        invitation.setId(id);
+        invitation.setStatus(status);
+        int count = umsInvitationMapper.updateByPrimaryKeySelective(invitation);
+        return count;
+    }
+
+    @Override
+    public int acceptInvitation(Long id) {
+        updateInvitationStatus(id, "accepted");
+        UmsUser user = umsUserService.getCurrentUser();
+        UmsInvitation invitation = umsInvitationMapper.selectByPrimaryKey(id);
+        WorkspaceMemberParam param = new WorkspaceMemberParam();
+        param.setWorkspaceId((long) invitation.getObjectId());
+        param.setRole("teamspace_member");
+        param.setUserId(user.getId());
+        int count = createMember(param);
+        return count;
+    }
+
     public void sendInvitation(Long invitationId,TeamspaceInvitationDto invitationDto){
         InvitationMessage invitationMessage = new InvitationMessage();
         UmsUser user = umsUserService.getCurrentUser();
@@ -119,4 +144,5 @@ public class NmsWorkspaceMemberImpl implements NmsWorkspaceMemberService {
         log.info("NO WORKSPACE NAME");
         return "NOT FOUND";
     }
+
 }

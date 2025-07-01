@@ -74,4 +74,22 @@ public class NmsWorkspaceMemberController {
         }
         return CommonResult.failed();
     }
+    @RequestMapping(value = "/accept/invitation", method=RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> acceptInvitation(@RequestBody TeamspaceInvitationDto param) {
+        int count = nmsWorkspaceMemberService.acceptInvitation(param.getId());
+        if(count > 0){
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/invitation/update-status", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> updateStatus(@RequestBody UmsInvitation param) {
+        int count = nmsWorkspaceMemberService.updateInvitationStatus(param.getId(), param.getStatus());
+        if(count > 0){
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
 }

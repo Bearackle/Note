@@ -58,68 +58,12 @@ CREATE TABLE `pms_block` (
                              FOREIGN KEY (`page_id`) REFERENCES `pms_page`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Bảng Databases: Quản lý cơ sở dữ liệu
-CREATE TABLE `dms_databases` (
-                                 `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                 `workspace_id` BIGINT,
-                                 `name` VARCHAR(255) NOT NULL,
-                                 `description` TEXT,
-                                 `created_by` BIGINT,
-                                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                 `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                 FOREIGN KEY (`workspace_id`) REFERENCES `nms_workspace`(`id`) ON DELETE CASCADE,
-                                 FOREIGN KEY (`created_by`) REFERENCES `ums_user`(`id`) ON DELETE SET NULL
-) ENGINE=InnoDB;
-
--- Bảng Database_Fields: Quản lý các trường trong cơ sở dữ liệu
-CREATE TABLE `dms_database_fields` (
-                                       `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                       `database_id` BIGINT,
-                                       `name` VARCHAR(255) NOT NULL,
-                                       `type` VARCHAR(50) NOT NULL,
-                                       `order` INT NOT NULL,
-                                       FOREIGN KEY (`database_id`) REFERENCES `dms_databases`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- Bảng Records: Quản lý bản ghi trong cơ sở dữ liệu
-CREATE TABLE `dms_record` (
-                              `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-                              `database_id` BIGINT,
-                              `created_by` BIGINT,
-                              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                              FOREIGN KEY (`database_id`) REFERENCES `dms_databases`(`id`) ON DELETE CASCADE,
-                              FOREIGN KEY (`created_by`) REFERENCES `ums_user`(`id`) ON DELETE SET NULL
-) ENGINE=InnoDB;
-
--- Bảng Record_Values: Quản lý giá trị của các trường trong bản ghi
-CREATE TABLE `dms_record_value` (
-                                    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                    `record_id` BIGINT,
-                                    `field_id` BIGINT,
-                                    `value` TEXT,
-                                    FOREIGN KEY (`record_id`) REFERENCES `dms_record` (`id`) ON DELETE CASCADE,
-                                    FOREIGN KEY (`field_id`) REFERENCES `dms_database_fields`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- Bảng Permissions: Quản lý quyền truy cập cho chức năng chia sẻ
-CREATE TABLE `ums_resource` (
-                                `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                `url` VARCHAR(255),
-                                `granted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
 CREATE TABLE `ums_role`(
                            `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
                            `name` VARCHAR(255),
                            `status` int(1),
                            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-CREATE TABLE `ums_user_role_relation`(
-                                         `id` INT AUTO_INCREMENT PRIMARY KEY,
-                                         `user_id` BIGINT,
-                                         `role_id` BIGINT,
-                                         foreign key (`user_id`) references `ums_user`(`id`)
-) engine=InnoDB;
 CREATE TABLE `ums_role_resource_relation`(
                                              `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
                                              `role_id` BIGINT,

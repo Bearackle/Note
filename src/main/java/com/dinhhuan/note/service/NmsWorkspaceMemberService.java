@@ -14,4 +14,6 @@ public interface NmsWorkspaceMemberService {
     int deleteMember(Long memberId);
     int updateMember(Long memberId,WorkspaceMemberParam param);
     List<UmsInvitation> listInvitations();
+    int updateInvitationStatus(Long id, String status);
+    int acceptInvitation(Long id);
 }
