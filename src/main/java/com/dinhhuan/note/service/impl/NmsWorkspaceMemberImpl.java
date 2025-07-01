@@ -2,10 +2,8 @@ package com.dinhhuan.note.service.impl;
 
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
-import com.dinhhuan.note.dto.InvitationMessage;
-import com.dinhhuan.note.dto.TeamspaceInvitationDto;
-import com.dinhhuan.note.dto.WorkspaceMemberParam;
-import com.dinhhuan.note.dto.WorkspaceParam;
+import com.dinhhuan.note.dao.NmsTeamspaceDao;
+import com.dinhhuan.note.dto.*;
 import com.dinhhuan.note.mapper.NmsWorkspaceMapper;
 import com.dinhhuan.note.mapper.NmsWorkspaceMemberMapper;
 import com.dinhhuan.note.mapper.UmsInvitationMapper;
@@ -33,6 +31,8 @@ public class NmsWorkspaceMemberImpl implements NmsWorkspaceMemberService {
     private Log log = LogFactory.get();
     @Autowired
     private NmsWorkspaceMapper nmsWorkspaceMapper;
+    @Autowired
+    private NmsTeamspaceDao nmsTeamspaceDao;
 
     @Override
     public int createMember(WorkspaceMemberParam param) {
@@ -84,12 +84,13 @@ public class NmsWorkspaceMemberImpl implements NmsWorkspaceMemberService {
         return count;
     }
     @Override
-    public List<UmsInvitation> listInvitations() {
-        UmsInvitationExample example = new UmsInvitationExample();
-        UmsInvitationExample.Criteria criteria = example.createCriteria();
-        criteria.andInviteeEmailEqualTo(umsUserService.getCurrentUser().getEmail());
-        criteria.andStatusEqualTo("pending");
-        List<UmsInvitation> invitations = umsInvitationMapper.selectByExample(example);
+    public List<InvitationJoinDto> listInvitations() {
+//        UmsInvitationExample example = new UmsInvitationExample();
+//        UmsInvitationExample.Criteria criteria = example.createCriteria();
+//        criteria.andInviteeEmailEqualTo(umsUserService.getCurrentUser().getEmail());
+//        criteria.andStatusEqualTo("pending");
+//        List<UmsInvitation> invitations = umsInvitationMapper.selectByExample(example);
+        List<InvitationJoinDto> invitations = nmsTeamspaceDao.getInvitationsPendingByEmail(umsUserService.getCurrentUser().getEmail());
         return invitations;
     }
 
@@ -129,7 +130,7 @@ public class NmsWorkspaceMemberImpl implements NmsWorkspaceMemberService {
         invitationMessage.setInviteeUsername(inviteeUser.getUsername());
         invitationMessage.setId(invitationId);
         invitationMessage.setStatus("pending");
-        log.info("sendInvitation {}", invitationMessage.toString());
+        log.info("sendInvitation {}", invitationMessage.getInviterEmail());
         notificationService.sendNotification(invitationMessage);
     }
     public String getWorkspaceName(long workspaceId) {

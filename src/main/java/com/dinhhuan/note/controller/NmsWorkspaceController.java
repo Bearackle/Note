@@ -74,4 +74,13 @@ public class NmsWorkspaceController {
         } else
             return CommonResult.failed();
     }
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public CommonResult<Integer> delete(@PathVariable("id") Long wid) {
+        int count = nmsWorkspaceService.delete(wid);
+        if(count > 0 ){
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
 }

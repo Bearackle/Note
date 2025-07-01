@@ -9,4 +9,5 @@ public interface NmsWorkspaceService {
     int createWorkspace(WorkspaceParam param);
     NmsWorkspace getWorkspaceInfo(Long id);
     List<NmsWorkspace> listWorkspaces();
+    Integer delete(Long id);
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dinhhuan.note.dto.UmsUserLoginParam;
 import com.dinhhuan.note.model.UmsUserRoleRelation;
+import com.dinhhuan.note.service.NotificationService;
 import com.github.pagehelper.PageHelper;
 import com.dinhhuan.note.bo.MemberUserDetails;
 import com.dinhhuan.note.common.exception.Assert;
@@ -30,6 +31,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
@@ -42,7 +44,11 @@ public class UmsUserServiceImpl implements UmsUserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UmsUserMapper umsUserMapper;
+    @Autowired
+    private NotificationService notificationService;
     private UmsUserService umsUserService;
+    @Autowired
+    private SecureRandom secureRandom;
 
     @Override
     public UmsUser getUserByUsername(String username) {
@@ -198,4 +204,25 @@ public class UmsUserServiceImpl implements UmsUserService {
         }
         return users.get(0);
     }
+
+    @Override
+    public int authenticateEmail(String email) {
+        StringBuilder sb = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
+            sb.append(secureRandom.nextInt(10));
+        }
+        getCacheService().setOtp(sb.toString(),email);
+        notificationService.sendMailOtp(email, sb.toString());
+        return sb.isEmpty() ? 0 : 1;
+    }
+
+    @Override
+    public boolean checkOtp(String otp, String email) {
+        String otpCode = getCacheService().getOtp(otp);
+        if( StrUtil.isEmpty(otpCode) &&StrUtil.equals(otp,otpCode)){
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -3,6 +3,7 @@ package com.dinhhuan.note.controller;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.dinhhuan.note.common.api.CommonResult;
+import com.dinhhuan.note.dto.InvitationJoinDto;
 import com.dinhhuan.note.dto.TeamspaceInvitationDto;
 import com.dinhhuan.note.dto.WorkspaceMemberParam;
 import com.dinhhuan.note.model.NmsWorkspaceMember;
@@ -67,8 +68,8 @@ public class NmsWorkspaceMemberController {
     }
     @RequestMapping(value = "/invitations", method=RequestMethod.GET)
     @ResponseBody
-    public CommonResult<List<UmsInvitation>> listInvitations() {
-        List<UmsInvitation> allInvitations = nmsWorkspaceMemberService.listInvitations();
+    public CommonResult<List<InvitationJoinDto>> listInvitations() {
+        List<InvitationJoinDto> allInvitations = nmsWorkspaceMemberService.listInvitations();
         if(allInvitations != null && !allInvitations.isEmpty()){
             return CommonResult.success(allInvitations);
         }

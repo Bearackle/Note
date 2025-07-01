@@ -7,6 +7,9 @@
         <result column="role" jdbcType="BIGINT" property="role" />
         <result column="description" jdbcType="BIGINT" property="description" />
     </resultMap>
+    <resultMap id="InvitationJoin" type="com.dinhhuan.note.dto.InvitationJoinDto" extends="com.dinhhuan.note.mapper.UmsInvitationMapper.BaseResultMap">
+        <result column="inviter_email" jdbcType="BIGINT" property="inviterEmail" />
+    </resultMap>
     <select id="getTeamspaceByUserId" resultMap="Teamspace">
         select ws.id, ws.name, ws.description, wsm.role from nms_workspace ws
          inner join
@@ -14,5 +17,11 @@
             where user_id = #{userId}
             and (role = 'teamspace_owner' or role = 'teamspace_member')
         ) wsm on ws.id = wsm.workspace_id
+    </select>
+    <select id="getInvitationsPendingByEmail" resultMap="InvitationJoin">
+        select usr.email inviter_email, inv.id id, inv.invitee_email, inv.object_id, inv.object_type, inv.role, inv.status
+        from ums_user usr join (select id, inviter_id, invitee_email, object_id, object_type,role, status
+                                from ums_invitation where invitee_email = #{email} and status='pending') inv
+                               on usr.id = inv.inviter_id
     </select>
 </mapper>

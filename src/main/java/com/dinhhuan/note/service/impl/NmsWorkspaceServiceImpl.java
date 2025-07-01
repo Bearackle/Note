@@ -65,4 +65,10 @@ public class NmsWorkspaceServiceImpl implements NmsWorkspaceService {
         }
         return null;
     }
+
+    @Override
+    public Integer delete(Long id) {
+         int count = nmsWorkspaceMapper.deleteByPrimaryKey(id);
+         return count;
+    }
 }

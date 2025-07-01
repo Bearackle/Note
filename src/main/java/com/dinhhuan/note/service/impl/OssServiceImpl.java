@@ -20,6 +20,8 @@ public class OssServiceImpl implements OssService {
 
     @Value("${minio.bucket}")
     private String BUCKET;
+    @Value("${minio.endpoint}")
+    private String ENDPOINT;
     @Autowired
     private MinioClient minioClient;
     private static final Log log = LogFactory.get();
@@ -38,6 +40,6 @@ public class OssServiceImpl implements OssService {
         } catch (Exception e) {
             log.error(e);
         }
-        return "http://localhost:9002/" + BUCKET + "/" + filename;
+        return ENDPOINT +"/" + BUCKET + "/" + filename;
     }
 }

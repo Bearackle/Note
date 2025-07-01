@@ -23,4 +23,6 @@ public interface UmsUserService {
     void logout(String username);
     UmsUser getCurrentUser();
     UmsUser getUserByEmail(String email);
+    int authenticateEmail(String email);
+    boolean checkOtp(String otp, String email);
 }

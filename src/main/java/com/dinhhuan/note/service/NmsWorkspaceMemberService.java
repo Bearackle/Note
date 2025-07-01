@@ -1,5 +1,6 @@
 package com.dinhhuan.note.service;
 
+import com.dinhhuan.note.dto.InvitationJoinDto;
 import com.dinhhuan.note.dto.TeamspaceInvitationDto;
 import com.dinhhuan.note.dto.WorkspaceMemberParam;
 import com.dinhhuan.note.model.NmsWorkspaceMember;
@@ -13,7 +14,7 @@ public interface NmsWorkspaceMemberService {
     List<NmsWorkspaceMember> listMembers(Long workspaceId);
     int deleteMember(Long memberId);
     int updateMember(Long memberId,WorkspaceMemberParam param);
-    List<UmsInvitation> listInvitations();
+    List<InvitationJoinDto> listInvitations();
     int updateInvitationStatus(Long id, String status);
     int acceptInvitation(Long id);
 }
