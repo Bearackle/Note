@@ -1,6 +1,7 @@
 package com.dinhhuan.note.controller;
 
 import com.dinhhuan.note.common.api.CommonResult;
+import com.dinhhuan.note.dto.PagePermissionDto;
 import com.dinhhuan.note.dto.PageShareDto;
 import com.dinhhuan.note.dto.PmsPageParam;
 import com.dinhhuan.note.model.PmsPage;
@@ -9,6 +10,7 @@ import com.dinhhuan.note.service.PmsPageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,10 +66,30 @@ public class PmsPageController {
     }
     @RequestMapping(value = "/{id}/share-info", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<PageShareDto> getPageShareInfo(@PathVariable("id") Long pageId){
+    public CommonResult<PageShareDto> getPageShareInfo(@PathVariable("id") Long pageId) {
         PageShareDto page = this.pmsPageService.getGeneralInfo(pageId);
-        if(page != null){
+        if (page != null) {
             return CommonResult.success(page);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/get-permission/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<Map<String,Integer>> getPagePermission(@PathVariable("id") Long id){
+        Integer isEditable = pmsPageService.getPermissionResource(id);
+        if(isEditable != null){
+            Map<String,Integer> map = new HashMap<>();
+            map.put("isEditable", isEditable);
+            return CommonResult.success(map);
+        }
+        return CommonResult.failed();
+    }
+    @RequestMapping(value = "/update-permission/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<Integer> updatePagePermission(@PathVariable("id") Long pageId, @RequestBody PagePermissionDto param){
+        int count = pmsPageService.updatePermissionResource(pageId, param);
+        if(count > 0){
+            return CommonResult.success(count);
         }
         return CommonResult.failed();
     }

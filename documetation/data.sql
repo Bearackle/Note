@@ -69,7 +69,6 @@ CREATE TABLE `ums_role_resource_relation`(
                                              `role_id` BIGINT,
                                              `resource_id` BIGINT,
                                              FOREIGN KEY (`role_id`) REFERENCES `ums_role`(`id`),
-                                             FOREIGN KEY (`resource_id`) REFERENCES 	`ums_resource`(`id`) on delete cascade
 ) ENGINE=InnoDB;
 
 -- Bảng Invitations: Quản lý lời mời để chia sẻ

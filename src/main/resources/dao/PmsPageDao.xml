@@ -12,4 +12,16 @@
         on p.created_by = u.id
         where p.id = #{pageId}
     </select>
+    <select id="getPagePermission" resultType="Integer">
+        select ur.status from
+                   `ums_role` ur join `ums_role_resource_relation` urr
+        on ur.id = urr.role_id
+        where urr.resource_id = #{pageId}
+    </select>
+    <update id="updatePagePermision">
+        UPDATE ums_role ur
+            JOIN ums_role_resource_relation urr ON ur.id = urr.role_id
+            SET ur.status = #{permision}
+        WHERE urr.resource_id = #{pageId};
+    </update>
 </mapper>

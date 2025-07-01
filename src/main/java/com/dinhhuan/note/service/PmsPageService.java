@@ -1,5 +1,6 @@
 package com.dinhhuan.note.service;
 
+import com.dinhhuan.note.dto.PagePermissionDto;
 import com.dinhhuan.note.dto.PageShareDto;
 import com.dinhhuan.note.dto.PmsPageParam;
 import com.dinhhuan.note.model.PmsPage;
@@ -14,4 +15,6 @@ public interface PmsPageService {
     int update(Long id, PmsPageParam param);
     int deletePage(Long id);
     PageShareDto getGeneralInfo(Long pageId);
+    Integer getPermissionResource(Long id);
+    int updatePermissionResource(Long pageId,PagePermissionDto param);
 }

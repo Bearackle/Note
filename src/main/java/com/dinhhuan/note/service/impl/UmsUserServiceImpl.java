@@ -3,6 +3,7 @@ package com.dinhhuan.note.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dinhhuan.note.dto.UmsUserLoginParam;
+import com.dinhhuan.note.model.UmsUserRoleRelation;
 import com.github.pagehelper.PageHelper;
 import com.dinhhuan.note.bo.MemberUserDetails;
 import com.dinhhuan.note.common.exception.Assert;
