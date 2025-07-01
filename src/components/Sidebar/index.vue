@@ -170,43 +170,130 @@
                     :key="team.workspaceId"
                     class="team-item"
                   >
-                    <n-button
-                      text
-                      block
-                      @click="handleWorkspaceClick(team.workspaceId)"
-                      :class="{
-                        'team-selected':
-                          teamStore.selectedTeam === team.workspaceId,
-                      }"
+                    <div class="team-header">
+                      <n-popover
+                        trigger="hover"
+                        placement="right"
+                        :delay="500"
+                        :duration="0"
+                      >
+                        <template #trigger>
+                          <n-button
+                            text
+                            block
+                            @click="handleTeamClick(team.workspaceId)"
+                            :class="{
+                              'team-selected':
+                                teamStore.selectedTeam === team.workspaceId,
+                            }"
+                          >
+                            <template #icon>
+                              <n-icon size="18" class="team-icon">
+                                <Icon icon="material-symbols:group-rounded" />
+                              </n-icon>
+                            </template>
+                            <span class="team-name">{{
+                              team.workspaceName
+                            }}</span>
+                            <div class="team-meta">
+                              <div class="team-indicator"></div>
+                            </div>
+                          </n-button>
+                        </template>
+                        <div class="team-description-popover">
+                          <div class="popover-title">Description</div>
+                          <div class="popover-content">
+                            {{ team.description || "No description available" }}
+                          </div>
+                        </div>
+                      </n-popover>
+                      <n-dropdown
+                        trigger="click"
+                        :options="teamActionOptions"
+                        placement="bottom-end"
+                        @select="(key) => handleTeamAction(key, team)"
+                      >
+                        <n-button
+                          quaternary
+                          size="small"
+                          class="team-actions"
+                          :class="{
+                            'team-actions-selected':
+                              teamStore.selectedTeam === team.workspaceId,
+                          }"
+                          @click.stop
+                        >
+                          <n-icon size="16">
+                            <EllipsisVertical />
+                          </n-icon>
+                        </n-button>
+                      </n-dropdown>
+                    </div>
+                    <!-- Add pages under team -->
+                    <div
+                      v-if="teamStore.selectedTeam === team.workspaceId"
+                      class="nested-pages"
                     >
-                      <template #icon>
-                        <n-icon size="18" class="team-icon">
-                          <Icon icon="material-symbols:group-rounded" />
-                        </n-icon>
-                      </template>
-                      {{ team.workspaceName }}
-                    </n-button>
-                    <n-dropdown
-                      trigger="click"
-                      :options="teamActionOptions"
-                      placement="bottom-end"
-                      @select="(key) => handleTeamAction(key, team)"
-                    >
+                      <div
+                        v-for="page in teamPages"
+                        :key="page.id"
+                        class="page-item"
+                      >
+                        <n-button
+                          text
+                          block
+                          @click="handlePageClick(page.id)"
+                          :class="{
+                            'page-selected': pageStore.selectedPage === page.id,
+                          }"
+                        >
+                          <template #icon>
+                            <n-icon size="18" class="page-icon">
+                              <Icon
+                                icon="material-symbols:description-rounded"
+                              />
+                            </n-icon>
+                          </template>
+                          <span class="page-title">{{
+                            page.title || "Untitled"
+                          }}</span>
+                        </n-button>
+                        <n-dropdown
+                          trigger="click"
+                          :options="pageOptions"
+                          placement="bottom-end"
+                          @select="(key) => handlePageAction(key, page)"
+                        >
+                          <n-button
+                            quaternary
+                            size="small"
+                            class="page-actions"
+                            :class="{
+                              'page-actions-selected':
+                                pageStore.selectedPage === page.id,
+                            }"
+                            @click.stop
+                          >
+                            <n-icon size="16">
+                              <EllipsisVertical />
+                            </n-icon>
+                          </n-button>
+                        </n-dropdown>
+                      </div>
                       <n-button
                         quaternary
-                        size="small"
-                        class="team-actions"
-                        :class="{
-                          'team-actions-selected':
-                            teamStore.selectedTeam === team.id,
-                        }"
-                        @click.stop
+                        block
+                        class="add-page-button"
+                        @click="handleAddPages(team.workspaceId)"
                       >
-                        <n-icon size="16">
-                          <EllipsisVertical />
-                        </n-icon>
+                        <template #icon>
+                          <n-icon size="16">
+                            <Add />
+                          </n-icon>
+                        </template>
+                        Add a page
                       </n-button>
-                    </n-dropdown>
+                    </div>
                   </div>
                 </div>
                 <n-empty v-else description="No teams found" />
@@ -247,27 +334,133 @@
                     :key="workspace.id"
                     class="workspace-item"
                   >
-                    <n-button
-                      text
-                      block
-                      @click="handleWorkspaceClick(workspace.id)"
-                      :class="{
-                        'workspace-selected':
-                          workspaceStore.selectedSpace === workspace.id,
-                      }"
+                    <div class="workspace-header">
+                      <n-popover
+                        trigger="hover"
+                        placement="right"
+                        :delay="500"
+                        :duration="0"
+                      >
+                        <template #trigger>
+                          <n-button
+                            text
+                            block
+                            @click="handleWorkspaceClick(workspace.id)"
+                            :class="{
+                              'workspace-selected':
+                                workspaceStore.selectedSpace === workspace.id,
+                            }"
+                          >
+                            <template #icon>
+                              <n-icon size="18" class="workspace-icon">
+                                <Icon
+                                  icon="material-symbols:space-dashboard-rounded"
+                                />
+                              </n-icon>
+                            </template>
+                            {{ workspace.name }}
+                            <div class="workspace-meta">
+                              <div class="workspace-indicator"></div>
+                            </div>
+                          </n-button>
+                        </template>
+                        <div class="workspace-description-popover">
+                          <div class="popover-title">Description</div>
+                          <div class="popover-content">
+                            {{
+                              workspace.description ||
+                              "No description available"
+                            }}
+                          </div>
+                        </div>
+                      </n-popover>
+                      <n-dropdown
+                        trigger="click"
+                        :options="workspaceActionOptions"
+                        placement="bottom-end"
+                        @select="(key) => handleWorkspaceAction(key, workspace)"
+                      >
+                        <n-button
+                          quaternary
+                          size="small"
+                          class="workspace-actions"
+                          :class="{
+                            'workspace-actions-selected':
+                              workspaceStore.selectedSpace === workspace.id,
+                          }"
+                          @click.stop
+                        >
+                          <n-icon size="16">
+                            <EllipsisVertical />
+                          </n-icon>
+                        </n-button>
+                      </n-dropdown>
+                    </div>
+                    <!-- Add pages under workspace -->
+                    <div
+                      v-if="workspaceStore.selectedSpace === workspace.id"
+                      class="nested-pages"
                     >
-                      <template #icon>
-                        <n-icon size="18" class="workspace-icon">
-                          <Icon
-                            icon="material-symbols:space-dashboard-rounded"
-                          />
-                        </n-icon>
-                      </template>
-                      {{ workspace.name }}
-                      <div class="workspace-meta">
-                        <div class="workspace-indicator"></div>
+                      <div
+                        v-for="page in pages"
+                        :key="page.id"
+                        class="page-item"
+                      >
+                        <n-button
+                          text
+                          block
+                          @click="handlePageClick(page.id)"
+                          :class="{
+                            'page-selected': pageStore.selectedPage === page.id,
+                          }"
+                        >
+                          <template #icon>
+                            <n-icon size="18" class="page-icon">
+                              <Icon
+                                icon="material-symbols:description-rounded"
+                              />
+                            </n-icon>
+                          </template>
+                          <span class="page-title">{{
+                            page.title || "Untitled"
+                          }}</span>
+                        </n-button>
+                        <n-dropdown
+                          trigger="click"
+                          :options="pageOptions"
+                          placement="bottom-end"
+                          @select="(key) => handlePageAction(key, page)"
+                        >
+                          <n-button
+                            quaternary
+                            size="small"
+                            class="page-actions"
+                            :class="{
+                              'page-actions-selected':
+                                pageStore.selectedPage === page.id,
+                            }"
+                            @click.stop
+                          >
+                            <n-icon size="16">
+                              <EllipsisVertical />
+                            </n-icon>
+                          </n-button>
+                        </n-dropdown>
                       </div>
-                    </n-button>
+                      <n-button
+                        quaternary
+                        block
+                        class="add-page-button"
+                        @click="handleAddPages(workspace.id)"
+                      >
+                        <template #icon>
+                          <n-icon size="16">
+                            <Add />
+                          </n-icon>
+                        </template>
+                        Add a page
+                      </n-button>
+                    </div>
                   </div>
                 </div>
                 <n-empty v-else description="No workspaces found" />
@@ -299,85 +492,44 @@
             </n-form-item>
           </n-form>
         </n-modal>
-      </div>
-      <div class="pages">
-        <n-collapse
-          :default-expanded-names="expandedNames"
-          v-model:expanded-names="expandedNames"
+        <!-- Add workspace settings modal -->
+        <n-modal
+          v-model:show="showWorkspaceSettingsModal"
+          :title="workspaceModalTitle"
+          preset="dialog"
+          positive-text="Save"
+          negative-text="Cancel"
+          @positive-click="handleSaveWorkspaceSettings"
+          @negative-click="showWorkspaceSettingsModal = false"
         >
-          <n-collapse-item name="1">
-            <template #header>
-              <div class="collapse-header">
-                <div class="header-content">
-                  <n-icon size="18" class="section-icon">
-                    <Icon icon="material-symbols:description-rounded" />
-                  </n-icon>
-                  <span>Pages</span>
-                </div>
-                <n-button
-                  quaternary
-                  size="small"
-                  @click.stop="handleAddPages"
-                  class="add-button"
-                >
-                  <n-icon size="16">
-                    <Add />
-                  </n-icon>
-                </n-button>
-              </div>
-            </template>
-            <n-spin :show="isLoadingPages">
-              <div>
-                <div
-                  v-if="Array.isArray(pages) && pages.length > 0"
-                  class="workspace-list"
-                >
-                  <div v-for="page in pages" :key="page.id" class="page-item">
-                    <n-button
-                      text
-                      block
-                      @click="handlePageClick(page.id)"
-                      :class="{
-                        'page-selected': pageStore.selectedPage === page.id,
-                      }"
-                    >
-                      <template #icon>
-                        <n-icon size="18" class="page-icon">
-                          <Icon icon="material-symbols:description-rounded" />
-                        </n-icon>
-                      </template>
-                      <span class="page-title">{{
-                        page.title || "Untitled"
-                      }}</span>
-                    </n-button>
-                    <n-dropdown
-                      trigger="click"
-                      :options="pageOptions"
-                      placement="bottom-end"
-                      @select="(key) => handlePageAction(key, page)"
-                    >
-                      <n-button
-                        quaternary
-                        size="small"
-                        class="page-actions"
-                        :class="{
-                          'page-actions-selected':
-                            pageStore.selectedPage === page.id,
-                        }"
-                        @click.stop
-                      >
-                        <n-icon size="16">
-                          <EllipsisVertical />
-                        </n-icon>
-                      </n-button>
-                    </n-dropdown>
-                  </div>
-                </div>
-                <n-empty v-else description="No pages found" />
-              </div>
-            </n-spin>
-          </n-collapse-item>
-        </n-collapse>
+          <n-form
+            ref="workspaceSettingsFormRef"
+            :model="workspaceSettingsForm"
+            :rules="workspaceSettingsRules"
+          >
+            <n-form-item
+              v-if="workspaceActionType === 'rename'"
+              label="Name"
+              path="name"
+            >
+              <n-input
+                v-model:value="workspaceSettingsForm.name"
+                placeholder="Enter workspace name"
+              />
+            </n-form-item>
+            <n-form-item
+              v-if="workspaceActionType === 'update-description'"
+              label="Description"
+              path="description"
+            >
+              <n-input
+                v-model:value="workspaceSettingsForm.description"
+                type="textarea"
+                placeholder="Enter workspace description"
+              />
+            </n-form-item>
+          </n-form>
+        </n-modal>
       </div>
     </div>
 
@@ -928,6 +1080,7 @@ export default defineComponent({
         isLoading.value = true;
         const response = await api.get("/workspace/list");
         workspaceStore.workspaces = response.data;
+        console.log("Workspaces fetched:", response.data.data);
         // Ensure we're setting an array
         if (response && response.data) {
           // If response.data is the array
@@ -977,53 +1130,54 @@ export default defineComponent({
     };
     const handleWorkspaceClick = async (workspaceId) => {
       workspaceStore.setSelectedSpace(workspaceId);
-      expandedNames.value = ["1"];
-      fetchPagesList();
+      teamStore.setSelectedTeam(null); // Clear team selection
+      await fetchPagesList(workspaceId);
     };
-    const fetchPagesList = async () => {
+    const fetchPagesList = async (workspaceId) => {
       try {
         isLoadingPages.value = true;
-        const response = await api.get(
-          "/page/list/" + workspaceStore.selectedSpace
-        );
-        pageStore.setPages(response.data.data);
+        const response = await api.get("/page/list/" + workspaceId);
         if (response && response.data) {
-          if (Array.isArray(response.data)) {
-            pages.value = response.data;
-          } else if (response.data.data && Array.isArray(response.data.data)) {
-            pages.value = response.data.data;
-          } else if (typeof response.data === "object") {
-            pages.value = Object.values(response.data);
-          }
+          pages.value = Array.isArray(response.data)
+            ? response.data
+            : response.data.data;
         }
+        if (trashedPages != null) {
+          const idTrash = new Set(trashedPages.value.map((page) => page.id));
+          pages.value = pages.value.filter((page) => !idTrash.has(page.id));
+        }
+        pageStore.setPages(pages.value);
       } catch (error) {
         console.error("Error fetching pages:", error);
+        pages.value = [];
       } finally {
         isLoadingPages.value = false;
       }
     };
-    const handleAddPages = async () => {
-      if (!workspaceStore.selectedSpace) {
-        // You might want to show a message to the user that they need to select a workspace first
+    const handleAddPages = async (parentId) => {
+      if (!parentId) {
         return;
       }
-      try {
-        // First create the page in store
-        const newPage = pageStore.createNewPage(workspaceStore.selectedSpace);
 
-        // Then create it in the backend
+      try {
+        const newPage = pageStore.createNewPage(parentId);
         const response = await api.post("/page/create", {
           title: newPage.title,
-          workspaceId: workspaceStore.selectedSpace,
+          workspaceId: parentId,
         });
 
-        // Refresh the pages list
-        await fetchPagesList();
+        // Refresh the pages list based on whether it's a team or workspace
+        if (teamStore.selectedTeam === parentId) {
+          await fetchTeamPages(parentId);
+        } else {
+          await fetchPagesList(parentId);
+        }
       } catch (error) {
         console.error("Error creating page:", error);
       }
     };
     const handlePageClick = async (pageId) => {
+      console.log("Page clicked with ID:", pageId);
       pageStore.setSelectedPage(pageId);
       pageStore.setSelectedTitle(
         pageStore.pages.find((page) => page.id === pageId)?.title
@@ -1204,17 +1358,21 @@ export default defineComponent({
       showTeamModal.value = true;
     };
 
-    const handleTeamClick = (workspaceId) => {
-      workspaceStore.setSelectedSpace(workspaceId);
-      fetchPagesList();
+    const handleTeamClick = async (teamId) => {
+      console.log("Team clicked with ID:", teamId);
+      teamStore.setSelectedTeam(teamId);
+      workspaceStore.setSelectedSpace(null); // Clear workspace selection
+      await fetchTeamPages(teamId);
     };
     const fetchInboxMessage = async () => {
       try {
         const response = await api.get("/workspace/member/invitations");
         inboxMessages.value = response.data.data;
-        inboxCounter.value = inboxMessages.value.filter(
-          (item) => item.status === "pending"
-        ).length;
+        if (response.data.data != null) {
+          inboxCounter.value = inboxMessages.value.filter(
+            (item) => item.status === "pending"
+          ).length;
+        }
       } catch (error) {
         console.error("Error fetching inbox messages:", error);
       }
@@ -1351,9 +1509,10 @@ export default defineComponent({
       if (!selectedTeam.value) return;
 
       try {
-        await teamSettingsFormRef.value?.validate();
-        const response = await api.put(
-          `/team/${selectedTeam.value.id}`,
+        // await teamSettingsFormRef.value?.validate();
+        console.log(selectedTeam.value.workspaceId);
+        const response = await api.post(
+          `/workspace/update/${selectedTeam.value.workspaceId}`,
           teamSettingsForm.value
         );
         if (response.data) {
@@ -1407,7 +1566,7 @@ export default defineComponent({
         );
 
         // Refresh pages list
-        await fetchPagesList();
+        await fetchPagesList(page.workspaceId);
       } catch (error) {
         console.error("Error restoring page:", error);
       }
@@ -1519,6 +1678,111 @@ export default defineComponent({
       }
     };
 
+    const teamPages = ref([]);
+    const isLoadingTeamPages = ref(false);
+
+    const fetchTeamPages = async (teamId) => {
+      try {
+        isLoadingTeamPages.value = true;
+        const response = await api.get(`/page/list/${teamId}`);
+        console.log("Team pages response:", response.data.data);
+        if (response && response.data) {
+          teamPages.value = response.data.data;
+        }
+        pageStore.setPages(teamPages.value);
+      } catch (error) {
+        console.error("Error fetching team pages:", error);
+        teamPages.value = [];
+      } finally {
+        isLoadingTeamPages.value = false;
+      }
+    };
+
+    // Workspace Management State
+    const showWorkspaceSettingsModal = ref(false);
+    const selectedWorkspace = ref(null);
+    const workspaceSettingsFormRef = ref(null);
+    const workspaceActionType = ref("");
+    const workspaceModalTitle = computed(() => {
+      return workspaceActionType.value === "rename"
+        ? "Rename Workspace"
+        : "Update Workspace Description";
+    });
+
+    const workspaceSettingsForm = ref({
+      name: "",
+      description: "",
+    });
+
+    const workspaceSettingsRules = {
+      name: {
+        required: true,
+        message: "Please enter workspace name",
+        trigger: "blur",
+      },
+      description: {
+        required: true,
+        message: "Please enter workspace description",
+        trigger: "blur",
+      },
+    };
+
+    const workspaceActionOptions = [
+      {
+        label: "Rename",
+        key: "rename",
+      },
+      {
+        label: "Update Description",
+        key: "update-description",
+      },
+    ];
+
+    const handleWorkspaceAction = async (key, workspace) => {
+      selectedWorkspace.value = workspace;
+      workspaceActionType.value = key;
+      workspaceSettingsForm.value = {
+        name: workspace.name || "",
+        description: workspace.description || "",
+      };
+      showWorkspaceSettingsModal.value = true;
+    };
+
+    const handleSaveWorkspaceSettings = async () => {
+      if (!selectedWorkspace.value) return;
+
+      try {
+        await workspaceSettingsFormRef.value?.validate();
+
+        const updateData =
+          workspaceActionType.value === "rename"
+            ? { name: workspaceSettingsForm.value.name }
+            : { description: workspaceSettingsForm.value.description };
+
+        const response = await api.post(
+          `/workspace/update/${selectedWorkspace.value.id}`,
+          updateData
+        );
+
+        if (response.data) {
+          // Update the workspace in the list
+          const index = workspaces.value.findIndex(
+            (w) => w.id === selectedWorkspace.value.id
+          );
+          if (index !== -1) {
+            workspaces.value[index] = {
+              ...workspaces.value[index],
+              ...updateData,
+            };
+          }
+          showWorkspaceSettingsModal.value = false;
+          selectedWorkspace.value = null;
+        }
+      } catch (error) {
+        console.error("Error updating workspace settings:", error);
+      }
+    };
+
     return {
       showModalWorkspace,
       formRef,
@@ -1599,6 +1863,17 @@ export default defineComponent({
       showInboxModal,
       inboxMessages,
       handleInvitationResponse,
+      teamPages,
+      isLoadingTeamPages,
+      showWorkspaceSettingsModal,
+      workspaceSettingsFormRef,
+      workspaceSettingsForm,
+      workspaceSettingsRules,
+      workspaceActionOptions,
+      workspaceActionType,
+      workspaceModalTitle,
+      handleWorkspaceAction,
+      handleSaveWorkspaceSettings,
     };
   },
 });
@@ -1887,6 +2162,7 @@ export default defineComponent({
   gap: 8px;
   width: 100%;
   padding: 2px 8px;
+  z-index: 1; /* Add z-index to ensure proper stacking */
 }
 
 .page-item .n-button {
@@ -1901,7 +2177,7 @@ export default defineComponent({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-right: 24px;
+  margin-right: 32px; /* Increase margin to accommodate the button */
 }
 
 .page-content {
@@ -1918,12 +2194,12 @@ export default defineComponent({
   margin-right: 4px;
   border-radius: 8px !important;
   position: absolute;
-  right: 0;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid transparent;
+  z-index: 2;
 }
 
 .page-actions-selected,
@@ -1936,7 +2212,6 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.95) !important;
   border-color: rgba(32, 128, 240, 0.2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transform: translateY(-50%) scale(1.05);
 }
 
 .page-icon,
@@ -1978,7 +2253,8 @@ export default defineComponent({
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   font-size: 14px;
   text-align: left;
 }
@@ -2003,6 +2279,7 @@ export default defineComponent({
     rgba(0, 230, 118, 0.1)
   ) !important;
   border: 1px solid rgba(32, 128, 240, 0.2);
+  padding-right: 32px; /* Add space for the indicator */
 }
 
 .utility-badge {
@@ -2081,59 +2358,202 @@ export default defineComponent({
 .team-item {
   position: relative;
   display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 2px 8px;
+}
+
+.team-header {
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 0;
   width: 100%;
 }
 
-.team-selected {
+.team-header .n-button {
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  justify-content: flex-start;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.team-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 24px;
+}
+
+.team-header .n-button:hover {
   background: linear-gradient(
     135deg,
-    rgba(124, 77, 255, 0.15),
-    rgba(124, 77, 255, 0.1)
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.8)
   ) !important;
+  transform: translateX(4px);
+}
+
+.team-header .n-button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #7c4dff, #2196f3);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 3px;
+}
+
+.team-header .n-button:hover::before {
+  opacity: 0.5;
+}
+
+.team-selected::before {
+  opacity: 1 !important;
 }
 
 .team-meta {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.member-avatars {
-  display: flex;
-  align-items: center;
+.team-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c4dff, #2196f3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.team-actions {
+.team-selected .team-indicator {
+  opacity: 1;
+}
+
+/* Common styles for action buttons (three dots) */
+.action-button {
   opacity: 0;
   flex-shrink: 0;
   width: 28px;
   height: 28px;
-  padding: 0;
-  margin-right: 4px;
-  border-radius: 8px !important;
+  min-width: 28px;
+  padding: 4px;
+  border-radius: 4px !important;
   position: absolute;
-  right: 0;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  background: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border: none !important;
 }
 
-.team-actions-selected,
-.team-item:hover .team-actions {
-  opacity: 0.9;
+.action-button:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
 }
 
-.team-actions:hover {
-  opacity: 1 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-color: rgba(124, 77, 255, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transform: translateY(-50%) scale(1.05);
+.action-button:active {
+  background: rgba(0, 0, 0, 0.09) !important;
+}
+
+.action-button .n-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: rgba(0, 0, 0, 0.45);
+  transition: color 0.15s ease;
+}
+
+.action-button:hover .n-icon {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Team specific styles */
+.team-actions {
+  composes: action-button;
+  right: 8px;
+}
+
+.team-header:hover .team-actions {
+  opacity: 1;
+}
+
+/* Nested pages under team */
+.team-item .nested-pages {
+  margin-left: 24px;
+  margin-top: 4px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(55, 53, 47, 0.1);
+  width: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-item .page-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+}
+
+.team-item .page-item .n-button {
+  text-align: left;
+  padding: 6px 8px;
+  height: 32px;
+  font-size: 13px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.team-item .page-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 28px;
+}
+
+/* Page specific styles */
+.page-actions {
+  composes: action-button;
+}
+
+.page-item:hover .page-actions {
+  opacity: 1;
+}
+
+/* Workspace page styles */
+.workspace-item .page-actions {
+  composes: action-button;
+}
+
+.workspace-item .page-item:hover .page-actions {
+  opacity: 1;
+}
+
+.workspace-item .page-title {
+  margin-right: 28px;
 }
 
 /* Member management styles */
@@ -2231,7 +2651,7 @@ export default defineComponent({
 
 .invite-indicator {
   position: absolute;
-  right: 16px;
+  right: 12px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -2403,5 +2823,124 @@ export default defineComponent({
 .home,
 .inbox {
   background: #ffffff;
+}
+
+.nested-pages {
+  margin-left: 24px;
+  margin-top: 4px;
+  border-left: 1px solid rgba(55, 53, 47, 0.1);
+  padding-left: 12px;
+}
+
+.add-page-button {
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(55, 53, 47, 0.65);
+  height: 32px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.add-page-button:hover {
+  background: rgba(55, 53, 47, 0.08) !important;
+  color: rgba(55, 53, 47, 0.9);
+}
+
+.page-item {
+  margin-top: 2px;
+}
+
+.page-item:first-child {
+  margin-top: 8px;
+}
+
+/* Workspace specific styles */
+.workspace-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-right: 36px; /* Add padding to accommodate the button */
+}
+
+.workspace-header .n-button {
+  overflow: visible; /* Allow the three-dot button to be visible */
+}
+
+.workspace-actions {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px !important;
+  position: absolute;
+  right: 4px; /* Reduced from 8px */
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 1px solid transparent;
+  z-index: 2;
+}
+
+/* Update workspace meta to ensure it doesn't overlap with the button */
+.workspace-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 4px; /* Add margin to prevent overlap with button */
+}
+
+.workspace-actions:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.workspace-actions:active {
+  background: rgba(0, 0, 0, 0.09) !important;
+}
+
+.workspace-actions .n-icon {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.workspace-actions:hover .n-icon {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.workspace-actions-selected {
+  opacity: 1;
+}
+
+/* Add these styles at the end of the <style> section */
+.workspace-description-popover {
+  max-width: 300px;
+  padding: 4px;
+}
+
+.popover-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-text-color-2);
+  margin-bottom: 4px;
+}
+
+.popover-content {
+  font-size: 13px;
+  color: var(--n-text-color);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Add these styles in the <style> section, near the workspace-description-popover styles */
+.team-description-popover {
+  max-width: 300px;
+  padding: 4px;
+}
+
+.team-description-popover .popover-content {
+  font-size: 13px;
+  line-height: 1.5;
 }
 </style>

@@ -7,6 +7,7 @@ export const usePageStore = defineStore("page", {
     currentContent: null,
     title: 0,
     selectedTitle: "",
+    isReadOnly: null,
   }),
   actions: {
     setPages(pages) {
@@ -41,6 +42,9 @@ export const usePageStore = defineStore("page", {
     },
     setSelectedTitle(title) {
       this.selectedTitle = title;
+    },
+    setReadOnly(isReadOnly) {
+      this.isReadOnly = isReadOnly;
     },
   },
 });

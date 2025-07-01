@@ -41,6 +41,7 @@ export default {
       editor = new EditorJS({
         holder: "editorjs",
         autofocus: true,
+        readOnly: pageStore.isReadOnly === true,
         tools: {
           header: {
             class: Header,
@@ -118,6 +119,19 @@ export default {
         data: pageStore.currentContent,
         onReady: () => {
           console.log("Editor.js is ready");
+          console.log("EditorJS version:", EditorJS.version);
+          console.log("Current pageStore.isReadOnly:", pageStore.isReadOnly);
+          console.log(
+            "Editor readOnly state before toggle:",
+            editor.readOnly.isEnabled
+          );
+          if (pageStore.isReadOnly !== null) {
+            editor.readOnly.toggle(pageStore.isReadOnly);
+            console.log(
+              "Editor readOnly state after toggle:",
+              editor.readOnly.isEnabled
+            );
+          }
         },
         onChange: (api, event) => {
           handleEditorChangeEvent(event);
@@ -324,7 +338,6 @@ export default {
     onMounted(() => {
       initEditor();
     });
-
     // Watch for changes in currentContent
     watch(
       () => pageStore.currentContent,
@@ -336,6 +349,8 @@ export default {
       },
       { deep: true }
     );
+
+    // Watch for changes in readonly state
 
     return {
       pageStore,

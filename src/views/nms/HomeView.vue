@@ -10,7 +10,7 @@
           :autoplay="true"
         />
       </div>
-      <h1 class="welcome-text">Hello, how do you do</h1>
+      <h1 class="welcome-text">Hello, how do you do?</h1>
     </div>
 
     <div class="search-section">
@@ -184,6 +184,11 @@ export default {
     };
   },
   methods: {
+    stripHtml(html) {
+      const temp = document.createElement("div");
+      temp.innerHTML = html;
+      return temp.innerText || temp.textContent || "";
+    },
     debounce(func, wait) {
       let timeout;
       return function (...args) {
@@ -203,11 +208,13 @@ export default {
         })
         .then((response) => {
           console.log("API response:", response);
-          this.searchResults = Array.isArray(response.data)
-            ? response.data
-            : response.data && Array.isArray(response.data.data)
-            ? response.data.data
-            : [];
+          this.searchResults =
+            response.data && Array.isArray(response.data.data)
+              ? response.data.data.map((item) => ({
+                  ...item,
+                  blockContent: this.stripHtml(item.blockContent),
+                }))
+              : [];
           console.log("Set searchResults:", this.searchResults);
         });
     },

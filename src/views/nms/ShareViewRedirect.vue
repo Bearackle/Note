@@ -45,9 +45,7 @@ onMounted(async () => {
   }
 });
 
-async function handleNoteGet(page) {
-  const { decode } = useHashids();
-  const pageId = decode(page);
+async function handleNoteGet(pageId) {
   pageStore.setSelectedPage(pageId);
   pageStore.setSelectedTitle(pageTitle.value);
   try {
@@ -71,10 +69,18 @@ async function handleNoteGet(page) {
     console.error(e);
   }
 }
-
+async function handleApiPermission(pageId) {
+  const response = await api.get("/page/get-permission/" + pageId);
+  if (response.data.data) {
+    pageStore.isReadOnly = response.data.data.isEditable == 0;
+  }
+}
 async function onContinue() {
   const pageId = route.params.pageId;
-  await handleNoteGet(pageId);
+  const { decode } = useHashids();
+  const decodePageId = decode(pageId);
+  await handleNoteGet(decodePageId);
+  await handleApiPermission(decodePageId);
   router.push("/note/edit");
 }
 </script>

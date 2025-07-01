@@ -66,6 +66,16 @@
         @onChange:content="handleChange"
       />
     </div>
+    <!-- Add the round button -->
+    <button class="floating-button" @click="handleFloatingButton">
+      <Vue3Lottie
+        :animationData="animationOptions.animationData"
+        :loop="animationOptions.loop"
+        :autoplay="animationOptions.autoplay"
+        :height="40"
+        :width="40"
+      />
+    </button>
     <!-- Share Modal -->
     <div v-if="shareModalVisible" class="modal-overlay">
       <div class="modal-content">
@@ -82,12 +92,35 @@
           </div>
           <div class="share-role">
             <label>Role:</label>
-            <select v-model="shareRole">
+            <select v-model="shareRole" @change="handlePermissionChange">
               <option value="viewer">Viewer</option>
               <option value="editor">Editor</option>
             </select>
           </div>
         </div>
+      </div>
+    </div>
+    <!-- Assistant Modal -->
+    <div v-if="showAssistant" class="assistant-modal">
+      <div class="assistant-header">
+        <h3>How can I help you today?</h3>
+        <button class="close-assistant" @click="showAssistant = false">
+          ×
+        </button>
+      </div>
+      <div class="assistant-content">
+        <button class="action-button" @click="handleSummarize">
+          <span class="action-icon">📝</span>
+          Summarize this page
+        </button>
+      </div>
+      <div class="assistant-input">
+        <input
+          type="text"
+          placeholder="Ask AI anything..."
+          v-model="assistantInput"
+          @keyup.enter="handleAssistantInput"
+        />
       </div>
     </div>
   </div>
@@ -102,9 +135,13 @@ import { useHashids } from "../../utils/useHashids";
 import { useFavoritesStore } from "@/store/favorites";
 import EditorJsToHtml from "editorjs-html";
 import html2pdf from "html2pdf.js";
-
+import { Vue3Lottie } from "vue3-lottie";
+import animationData from "../../assets/animation/think.json";
 export default {
-  components: { Editor },
+  components: {
+    Editor,
+    Vue3Lottie,
+  },
   data() {
     const edjsParser = EditorJsToHtml();
     return {
@@ -118,6 +155,13 @@ export default {
       shareRole: "viewer",
       favoritesStore: useFavoritesStore(),
       edjsParser,
+      animationOptions: {
+        animationData: animationData,
+        loop: true,
+        autoplay: true,
+      },
+      showAssistant: false,
+      assistantInput: "",
     };
   },
   setup() {
@@ -129,9 +173,11 @@ export default {
   computed: {
     shareUrl() {
       const { encode } = useHashids();
-      return `localhost:5173/share/${encode(
-        this.pageStore.selectedPage || ""
-      )}`;
+      return (
+        import.meta.env.VITE_SHARE_URL +
+        "/share/" +
+        encode(this.pageStore.selectedPage || "")
+      );
     },
     isFavorite() {
       return this.favoritesStore.isFavorite(this.pageStore.selectedPage);
@@ -187,16 +233,47 @@ export default {
       this.isApiLoading = status === "loading";
       this.apiStatus = status;
     },
-    saveTitle() {
-      if (this.tempTitle.trim()) {
+    async saveTitle() {
+      if (!this.tempTitle.trim()) {
+        this.isEditing = false;
+        return;
+      }
+
+      try {
+        // Update store first for immediate UI response
+        this.pageStore.setSelectedTitle(this.tempTitle);
+
+        // Find and update the page in the store's pages array
         const currentPage = this.pageStore.pages.find(
           (page) => page.id === this.pageStore.selectedPage
         );
-        if (currentPage) {
-          currentPage.title = this.tempTitle;
+
+        if (!currentPage) {
+          console.error("No page found with id:", this.pageStore.selectedPage);
+          return;
         }
+
+        // Update the page title in the array
+        currentPage.title = this.tempTitle;
+
+        // Make API call
+        const response = await api.put(`/page/${currentPage.id}`, {
+          title: this.tempTitle,
+        });
+        console.log(response.data);
+        if (!response.data.code == 200) {
+          // If API call fails, revert the changes
+          this.pageStore.setSelectedTitle(currentPage.title);
+          throw new Error("Failed to update title");
+        }
+
+        this.updateApiStatus("Title saved successfully");
+      } catch (error) {
+        console.error("Error saving title:", error);
+        this.updateApiStatus("Failed to save title");
+      } finally {
+        this.isEditing = false;
       }
-      this.isEditing = false;
     },
     toggleFavorite() {
       if (this.isFavorite) {
@@ -294,6 +371,36 @@ export default {
         this.updateApiStatus("Export failed");
       }
     },
+    handleFloatingButton() {
+      this.showAssistant = !this.showAssistant;
+    },
+    handleAssistantInput() {
+      if (this.assistantInput.trim()) {
+        console.log("Assistant input:", this.assistantInput);
+        // Handle the input here
+        this.assistantInput = "";
+      }
+    },
+    handleSummarize() {
+      console.log("Summarizing page...");
+      // Add summarize logic here
+    },
+    async handlePermissionChange() {
+      try {
+        const response = await api.post(
+          `/page/update-permission/${this.pageStore.selectedPage}`,
+          {
+            status: this.shareRole === "editor" ? 1 : 0,
+          }
+        );
+        if (response.data.success) {
+          this.updateApiStatus("Permission updated successfully");
+        }
+      } catch (error) {
+        console.error("Error updating permission:", error);
+        this.updateApiStatus("Failed to update permission");
+      }
+    },
   },
   watch: {
     isEditing(newVal) {
@@ -323,7 +430,7 @@ export default {
   margin: 0;
   padding: 0;
   position: relative;
-  background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+  background: white;
   overflow: hidden; /* Prevent container from scrolling */
 }
 
@@ -717,5 +824,130 @@ export default {
   font-size: 18px;
   margin: 12px 0;
   color: #2d3748;
+}
+
+.floating-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  padding: 0;
+}
+
+.floating-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.floating-button:active {
+  transform: translateY(0);
+}
+
+.assistant-modal {
+  position: fixed;
+  bottom: calc(2rem + 70px);
+  right: 2rem;
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+}
+
+.assistant-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assistant-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.close-assistant {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.assistant-content {
+  padding: 12px;
+}
+
+.action-button {
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.action-button:hover {
+  background-color: #f5f5f5;
+}
+
+.action-icon {
+  font-size: 18px;
+}
+
+.assistant-input {
+  padding: 12px;
+  border-top: 1px solid #eee;
+}
+
+.assistant-input input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+
+.assistant-input input:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
