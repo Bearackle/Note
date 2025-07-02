@@ -293,15 +293,23 @@ export default {
     },
     scrollNext(section) {
       const container = document.querySelector(
-        `.${section}-section .cards-container`
+        section === "recent"
+          ? ".recently-visited .cards-container"
+          : `.${section}-section .cards-container`
       );
-      container.scrollBy({ left: 200, behavior: "smooth" });
+      if (container) {
+        container.scrollBy({ left: 200, behavior: "smooth" });
+      }
     },
     scrollPrev(section) {
       const container = document.querySelector(
-        `.${section}-section .cards-container`
+        section === "recent"
+          ? ".recently-visited .cards-container"
+          : `.${section}-section .cards-container`
       );
-      container.scrollBy({ left: -200, behavior: "smooth" });
+      if (container) {
+        container.scrollBy({ left: -200, behavior: "smooth" });
+      }
     },
     async handleFavoritePageClick(pageId, pageTitle) {
       await this.handleRecentPageClick(pageId, pageTitle);
