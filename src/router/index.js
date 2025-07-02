@@ -6,7 +6,7 @@ import HomeView from "@/views/nms/HomeView.vue";
 import Register from "@/views/ums/register/index.vue";
 import ShareViewRedirect from "@/views/nms/ShareViewRedirect.vue";
 import Forgot from "@/views/ums/login/forgot.vue";
-import ChangePassword from "@/views/ums/login/changepassword.vue";
+import ChangePassword from "@/views/ums/login/ChangePassword.vue";
 
 const routes = [
   {
