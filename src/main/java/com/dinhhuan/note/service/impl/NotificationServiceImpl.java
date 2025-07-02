@@ -35,7 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(gatewayUrl, request, String.class);
         System.out.println(response.getBody());
-        sendMailInvitation(message);
+       // sendMailInvitation(message);
     }
 
     @Override
