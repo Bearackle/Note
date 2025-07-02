@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <div class="login-title">Life is short.</div>
+      <div class="login-title">MemoHub.</div>
       <div class="login-subtitle">Đăng nhập tài khoản của bạn</div>
       <n-space vertical :size="12" class="login-buttons">
         <n-button block secondary>

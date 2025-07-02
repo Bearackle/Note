@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <div class="login-title">Make it happen.</div>
+      <div class="login-title">MemoHub.</div>
       <div class="login-subtitle">Đăng ký tài khoản của bạn</div>
       <n-space vertical :size="12" class="login-buttons">
         <n-button block secondary icon="logos:google"

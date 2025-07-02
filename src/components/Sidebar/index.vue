@@ -107,7 +107,7 @@
                     <Icon icon="material-symbols:person-add" />
                   </n-icon>
                   <span class="inbox-message">
-                    {{ message.inviterId }} invited you to
+                    {{ message.inviterEmail }} invited you to
                     {{ message.objectType }}
                   </span>
                 </div>
@@ -530,6 +530,22 @@
             </n-form-item>
           </n-form>
         </n-modal>
+
+        <!-- Add delete workspace confirmation modal -->
+        <n-modal
+          v-model:show="showDeleteWorkspaceModal"
+          title="Delete Workspace"
+          preset="dialog"
+          positive-text="Delete"
+          negative-text="Cancel"
+          @positive-click="handleConfirmDeleteWorkspace"
+          @negative-click="showDeleteWorkspaceModal = false"
+        >
+          <p>
+            Are you sure you want to delete this workspace? This action cannot
+            be undone.
+          </p>
+        </n-modal>
       </div>
     </div>
 
@@ -830,9 +846,11 @@
                 size="small"
                 @click="restoreFromTrash(page)"
               >
-                <n-icon size="16">
-                  <Icon icon="material-symbols:restore-rounded" />
-                </n-icon>
+                <template #icon>
+                  <n-icon size="16">
+                    <Icon icon="material-symbols:refresh-rounded" />
+                  </n-icon>
+                </template>
               </n-button>
               <n-button
                 quaternary
@@ -988,7 +1006,7 @@ export default defineComponent({
     const settingsFormRef = ref(null);
     const settingsForm = ref({
       username: Cookies.get("username") || "",
-      email: "",
+      email: Cookies.get("email") || "",
     });
     const settingsRules = {
       username: {
@@ -1044,7 +1062,13 @@ export default defineComponent({
           break;
       }
     };
-
+    const handleDeleteTeams = async (teamId) => {
+      try {
+        await api.delete(`/workspace/${teamId}`);
+      } catch (error) {
+        console.error("Error deleting team:", error);
+      }
+    };
     const pageOptions = [
       {
         label: "Rename",
@@ -1369,6 +1393,7 @@ export default defineComponent({
         const response = await api.get("/workspace/member/invitations");
         inboxMessages.value = response.data.data;
         if (response.data.data != null) {
+          console.log(inboxMessages.value);
           inboxCounter.value = inboxMessages.value.filter(
             (item) => item.status === "pending"
           ).length;
@@ -1528,8 +1553,8 @@ export default defineComponent({
       if (!selectedTeam.value) return;
 
       try {
-        await api.delete(`/team/${selectedTeam.value.id}`);
-        teamStore.removeTeam(selectedTeam.value.id);
+        console.log(selectedTeam.value.workspaceId);
+        handleDeleteTeams(selectedTeam.value.workspaceId);
         showDeleteTeamModal.value = false;
         selectedTeam.value = null;
       } catch (error) {
@@ -1703,6 +1728,7 @@ export default defineComponent({
     const selectedWorkspace = ref(null);
     const workspaceSettingsFormRef = ref(null);
     const workspaceActionType = ref("");
+    const showDeleteWorkspaceModal = ref(false);
     const workspaceModalTitle = computed(() => {
       return workspaceActionType.value === "rename"
         ? "Rename Workspace"
@@ -1736,16 +1762,25 @@ export default defineComponent({
         label: "Update Description",
         key: "update-description",
       },
+      {
+        label: "Delete Workspace",
+        key: "delete-workspace",
+      },
     ];
 
     const handleWorkspaceAction = async (key, workspace) => {
       selectedWorkspace.value = workspace;
       workspaceActionType.value = key;
-      workspaceSettingsForm.value = {
-        name: workspace.name || "",
-        description: workspace.description || "",
-      };
-      showWorkspaceSettingsModal.value = true;
+
+      if (key === "delete-workspace") {
+        showDeleteWorkspaceModal.value = true;
+      } else {
+        workspaceSettingsForm.value = {
+          name: workspace.name || "",
+          description: workspace.description || "",
+        };
+        showWorkspaceSettingsModal.value = true;
+      }
     };
 
     const handleSaveWorkspaceSettings = async () => {
@@ -1780,6 +1815,26 @@ export default defineComponent({
         }
       } catch (error) {
         console.error("Error updating workspace settings:", error);
+      }
+    };
+
+    const handleConfirmDeleteWorkspace = async () => {
+      if (!selectedWorkspace.value) return;
+
+      try {
+        await api.delete(`/workspace/${selectedWorkspace.value.id}`);
+        // Remove the workspace from the list
+        workspaces.value = workspaces.value.filter(
+          (w) => w.id !== selectedWorkspace.value.id
+        );
+        // Clear selection if the deleted workspace was selected
+        if (workspaceStore.selectedSpace === selectedWorkspace.value.id) {
+          workspaceStore.setSelectedSpace(null);
+        }
+        showDeleteWorkspaceModal.value = false;
+        selectedWorkspace.value = null;
+      } catch (error) {
+        console.error("Error deleting workspace:", error);
       }
     };
 
@@ -1874,6 +1929,8 @@ export default defineComponent({
       workspaceModalTitle,
       handleWorkspaceAction,
       handleSaveWorkspaceSettings,
+      showDeleteWorkspaceModal,
+      handleConfirmDeleteWorkspace,
     };
   },
 });
