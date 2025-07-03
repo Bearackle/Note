@@ -24,4 +24,10 @@
                                 from ums_invitation where invitee_email = #{email} and status='pending') inv
                                on usr.id = inv.inviter_id
     </select>
+    <select id="getListWorkspacePrivate" resultMap="com.dinhhuan.note.mapper.NmsWorkspaceMapper.ResultMapWithBLOBs">
+        select ws.id, ws.name, ws.description, ws.created_by,ws.created_at
+        from nms_workspace ws join (select workspace_id from nms_workspace_member wsm
+                                    where wsm.user_id = #{userId} and role='owner') wsmj
+                                   on ws.id = wsmj.workspace_id
+    </select>
 </mapper>

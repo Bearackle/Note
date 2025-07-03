@@ -34,7 +34,7 @@ logstash:
   host: localhost
   enableInnerLog: false
 minio:
-  endpoint: https://biz.dinhhuan.id.vn
+  endpoint: http://localhost:9002
   username: minioadmin
   password: minioadmin
   bucket: note-app

@@ -1,5 +1,6 @@
 package com.dinhhuan.note.service.impl;
 
+import com.dinhhuan.note.dao.NmsTeamspaceDao;
 import com.dinhhuan.note.dto.WorkspaceMemberParam;
 import com.dinhhuan.note.dto.WorkspaceParam;
 import com.dinhhuan.note.mapper.NmsWorkspaceMapper;
@@ -24,6 +25,8 @@ public class NmsWorkspaceServiceImpl implements NmsWorkspaceService {
     private NmsWorkspaceMemberService nmsWorkspaceMemberService;
     @Autowired
     private NmsWorkspaceMapper nmsWorkspaceMapper;
+    @Autowired
+    private NmsTeamspaceDao nmsTeamspaceDao;
     @Override
     public int createWorkspace(WorkspaceParam param) {
         int count = 0;
@@ -56,10 +59,11 @@ public class NmsWorkspaceServiceImpl implements NmsWorkspaceService {
     @Override
     public List<NmsWorkspace> listWorkspaces() {
         UmsUser user = umsUserService.getCurrentUser();
-        NmsWorkspaceExample example = new NmsWorkspaceExample();
-        NmsWorkspaceExample.Criteria criteria = example.createCriteria();
-        criteria.andCreatedByEqualTo(user.getId());
-        List<NmsWorkspace> list = nmsWorkspaceMapper.selectByExampleWithBLOBs(example);
+//        NmsWorkspaceExample example = new NmsWorkspaceExample();
+//        NmsWorkspaceExample.Criteria criteria = example.createCriteria();
+//        criteria.andCreatedByEqualTo(user.getId());
+//        List<NmsWorkspace> list = nmsWorkspaceMapper.selectByExampleWithBLOBs(example);
+        List<NmsWorkspace> list = nmsTeamspaceDao.getListWorkspacePrivate(user.getId());
         if(list != null && !list.isEmpty()) {
             return list;
         }
