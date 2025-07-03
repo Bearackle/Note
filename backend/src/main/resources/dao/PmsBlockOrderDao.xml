@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dinhhuan.note.dao.PmsBlockOrderDao">
+    <update id="changeOrderAfter">
+        UPDATE pms_block 
+        SET block_order = block_order + 1 
+        WHERE page_id = #{pageId,jdbcType=BIGINT}
+        AND block_order >= #{orderIndex,jdbcType=INTEGER}
+    </update>
+    
+    <update id="changeOrderAfterRemove">
+        UPDATE pms_block 
+        SET block_order = block_order - 1 
+        WHERE page_id = #{pageId,jdbcType=BIGINT}
+        AND block_order >= #{orderIndex,jdbcType=INTEGER}
+    </update>
+</mapper> 

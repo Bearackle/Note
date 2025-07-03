@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dinhhuan.note.dao.NmsTeamspaceDao">
+    <resultMap id="Teamspace" type="com.dinhhuan.note.dto.TeamspaceParamDto">
+        <result column="id" jdbcType="BIGINT" property="workspaceId" />
+        <result column="name" jdbcType="VARCHAR" property="workspaceName" />
+        <result column="role" jdbcType="BIGINT" property="role" />
+        <result column="description" jdbcType="BIGINT" property="description" />
+    </resultMap>
+    <resultMap id="InvitationJoin" type="com.dinhhuan.note.dto.InvitationJoinDto" extends="com.dinhhuan.note.mapper.UmsInvitationMapper.BaseResultMap">
+        <result column="inviter_email" jdbcType="BIGINT" property="inviterEmail" />
+    </resultMap>
+    <select id="getTeamspaceByUserId" resultMap="Teamspace">
+        select ws.id, ws.name, ws.description, wsm.role from nms_workspace ws
+         inner join
+         (select  b_wsm.workspace_id,b_wsm.role from nms_workspace_member b_wsm
+            where user_id = #{userId}
+            and (role = 'teamspace_owner' or role = 'teamspace_member')
+        ) wsm on ws.id = wsm.workspace_id
+    </select>
+    <select id="getInvitationsPendingByEmail" resultMap="InvitationJoin">
+        select usr.email inviter_email, inv.id id, inv.invitee_email, inv.object_id, inv.object_type, inv.role, inv.status
+        from ums_user usr join (select id, inviter_id, invitee_email, object_id, object_type,role, status
+                                from ums_invitation where invitee_email = #{email} and status='pending') inv
+                               on usr.id = inv.inviter_id
+    </select>
+    <select id="getListWorkspacePrivate" resultMap="com.dinhhuan.note.mapper.NmsWorkspaceMapper.ResultMapWithBLOBs">
+        select ws.id, ws.name, ws.description, ws.created_by,ws.created_at
+        from nms_workspace ws join (select workspace_id from nms_workspace_member wsm
+                                    where wsm.user_id = #{userId} and role='owner') wsmj
+                                   on ws.id = wsmj.workspace_id
+    </select>
+</mapper>

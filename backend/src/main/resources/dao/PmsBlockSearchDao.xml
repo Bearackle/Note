@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dinhhuan.note.dao.PmsBlockSearchDao">
+    <resultMap id="SearchObject" type="com.dinhhuan.note.dto.SearchBlockObject">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="workspace_id" jdbcType="BIGINT" property="workspaceId" />
+        <result column="workspace_name" jdbcType="VARCHAR" property="workspaceName" />
+        <result column="page_id" jdbcType="BIGINT" property="pageId" />
+        <result column="title" jdbcType="VARCHAR" property="pageTitle" />
+        <result column="content_text" jdbcType="VARCHAR" property="blockContent" />
+    </resultMap>
+    <select id="search" resultMap="SearchObject">
+        select workspace_id,
+               ws.name workspace_name,
+               page.id page_id,
+               page.title, page.content_text
+        from nms_workspace ws
+        join
+            (select id, workspace_id, title,block.content_text from pms_page
+              join
+               (select page_id, content_text , MATCH(content_text) AGAINST(#{keyword}) AS relevance from pms_block
+                 where MATCH(content_text)
+                    AGAINST( #{keyword} IN NATURAL LANGUAGE MODE )
+                     ORDER BY relevance DESC) block
+              on pms_page.id = block.page_id
+             where created_by = #{userId}
+        ) page
+        on ws.id = page.workspace_id;
+    </select>
+</mapper>
