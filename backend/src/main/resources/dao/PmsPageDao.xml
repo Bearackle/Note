@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dinhhuan.note.dao.PmsPageDao">
+    <resultMap id="PageShareInfo" type="com.dinhhuan.note.dto.PageShareDto">
+        <result column="page_id" jdbcType="BIGINT" property="pageId" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="author" jdbcType="VARCHAR" property="author" />
+    </resultMap>
+    <select id="getPage" resultMap="PageShareInfo">
+        select p.id page_id,title, u.username author from pms_page p
+        join ums_user u
+        on p.created_by = u.id
+        where p.id = #{pageId}
+    </select>
+    <select id="getPagePermission" resultType="Integer">
+        select ur.status from
+                   `ums_role` ur join `ums_role_resource_relation` urr
+        on ur.id = urr.role_id
+        where urr.resource_id = #{pageId}
+    </select>
+    <update id="updatePagePermision">
+        UPDATE ums_role ur
+            JOIN ums_role_resource_relation urr ON ur.id = urr.role_id
+            SET ur.status = #{permision}
+        WHERE urr.resource_id = #{pageId};
+    </update>
+</mapper>
