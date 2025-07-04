@@ -14,9 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *phương thức bổ trợ cho xử lý JWT sử dụng thuật toán HS512
- */
 public class JwtTokenUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenUtil.class);
     private static final String CLAIM_KEY_USERNAME = "sub";
